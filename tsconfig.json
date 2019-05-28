@@ -3,7 +3,9 @@
         "module": "commonjs",
         "target": "es2016",
         "jsx": "preserve",
-        "outDir": "build"
+        "outDir": "build",
+        "noImplicitReturns": true,
+        "noImplicitAny": true
     },
     "include": [
         "srt/*"

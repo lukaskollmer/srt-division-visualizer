@@ -1,43 +1,49 @@
 // An arbitrary width number type with certain binary characteristics
+// Uses two's complement for negative numbers
 
 export class LKNumber {
     static get exponentWidth(): number {
-        return 64;
+        return 32;
     }
+    
     static get significandWidth(): number {
-        return 256;
+        return 128;
     }
+    
     static get bitPatternWidth(): number {
-        return LKNumber.exponentWidth + LKNumber.significandWidth;
+        return this.exponentWidth + this.significandWidth;
     }
 
-    _buffer: ArrayBuffer;
-    fullBitPattern: Uint8Array;
 
-    constructor(value?: number | ArrayBuffer) {
+    private readonly _buffer: ArrayBuffer;
+    private readonly _fullBitPattern: Uint8Array;
 
-        if (!(value instanceof ArrayBuffer)) {
-            this._buffer = new ArrayBuffer(LKNumber.bitPatternWidth);
-            this.fullBitPattern = new Uint8Array(this._buffer);
-        }
 
+    constructor(value?: number | string | ArrayBuffer) {
         if (value instanceof ArrayBuffer) {
             this._buffer = value;
-            this.fullBitPattern = new Uint8Array(this._buffer);
+        } else {
+            this._buffer = new ArrayBuffer(LKNumber.bitPatternWidth);
+        }
+        this._fullBitPattern = new Uint8Array(this._buffer);
         
-        } else if (typeof value === 'number') {
+        if (typeof value === 'number' || typeof value === 'string') {
+            if (typeof value === 'string') {
+                value = parseFloat(value);
+            }
             const isNegative = value < 0;
             if (isNegative) value *= -1;
 
             const dec = Math.floor(value);
             const decBinaryDigits = dec.toString(2);
-            for (let i = 0; i < decBinaryDigits.length; i++) {
+            const limit = Math.min(LKNumber.exponentWidth, decBinaryDigits.length);
+            for (let i = 0; i < limit; i++) {
                 const x = parseInt(decBinaryDigits.charAt(i));
-                this.exponentView[LKNumber.exponentWidth - decBinaryDigits.length + i] = x;
+                this.exponentView[LKNumber.exponentWidth - limit + i] = x;
             }
 
             let frac = value - dec;
-            for (let i = 0; i < 20 && frac != 0; i++) {
+            for (let i = 0; i < LKNumber.significandWidth && frac != 0; i++) {
                 const tmp = frac - Math.pow(2, -(i+1));
                 if (tmp >= 0) {
                     this.significandView[i] = 1;
@@ -49,6 +55,32 @@ export class LKNumber {
                 LKNumber._negate_imp(this.fullBitPattern, this.fullBitPattern);
             }
         }
+    }
+
+
+    // static normalized(value: number): [LKNumber, number] {
+    //     if (value === 0) {
+    //         return [new LKNumber(), 0];
+    //     }
+
+    //     const isNegative = value < 0;
+    //     if (isNegative) value *= -1;
+
+    //     const dec = Math.floor(value);
+    //     const decBinaryDigits = dec.toString(2);
+
+    //     let exp = 0;
+    //     while (value > 10) {
+    //         value /= 10;
+    //         exp += 1;
+    //     }
+    //     return [new LKNumber(value), exp];
+    // }
+
+
+
+    get fullBitPattern(): Uint8Array {
+        return this._fullBitPattern;
     }
 
     get exponentView(): Uint8Array {
@@ -76,6 +108,15 @@ export class LKNumber {
         return exp;
     }
 
+    normalized(): [LKNumber, number] {
+        const x = this.copy();
+        return [x, x.normalize()];
+    }
+
+    get isNegative() {
+        return this.significandView[0] === 1;
+    }
+
     add(other: LKNumber): LKNumber {
         const retval = new LKNumber();
         LKNumber._add_imp(
@@ -84,6 +125,26 @@ export class LKNumber {
             other.fullBitPattern
         );
         return retval;
+    }
+
+    add_carrySave(other: LKNumber, yetAnother: LKNumber): [LKNumber, LKNumber] {
+        const retval = new LKNumber();
+        const carry = new LKNumber();
+        for (let i = LKNumber.bitPatternWidth - 1; i >= 0; i--) {
+            const x = this.fullBitPattern[i] + other.fullBitPattern[i] + yetAnother.fullBitPattern[i];
+            switch (x) {
+                case 0: break;
+                case 1: retval.fullBitPattern[i] = 1; break;
+                case 2: carry.fullBitPattern[i] = 1; break;
+                case 3:
+                    retval.fullBitPattern[i] = 1;
+                    carry.fullBitPattern[i] = 1;
+                    break;
+                default: throw new Error(`should never reach here (x: ${x})`);
+            }
+        }
+        carry.shift_left(1);
+        return [retval, carry];
     }
 
 
@@ -110,6 +171,13 @@ export class LKNumber {
     }
 
 
+    flipBits() {
+        for (let i = 0; i < LKNumber.bitPatternWidth; i++) {
+            this.fullBitPattern[i] = 1 - this.fullBitPattern[i];
+        }
+    }
+
+
     negate(): LKNumber {
         const retval = this.copy();
         LKNumber._negate_imp(
@@ -120,18 +188,11 @@ export class LKNumber {
         return retval;
     }
 
-    // shift the number's bit pattern in-place
-    shift(x: number) {
-        if (x < 0) {
-            this.shift_left(Math.abs(x));
-        } else if (x > 0) {
-            this.shift_right(x);
-        }
-    }
 
     shift_left(x: number) {
         LKNumber.shift_left_imp(this.fullBitPattern, x);
     }
+
 
     shift_right(x: number) {
         LKNumber.shift_right_sext_imp(this.fullBitPattern, x);
@@ -139,16 +200,35 @@ export class LKNumber {
 
 
     toString(): string {
-        const numberOfSignificantSignificandDigits = this.significandView.lastIndexOf(1);
-        const binaryDigits = [
-            ...this.exponentView,
-            '.',
-            ...this.significandView.slice(0, Math.max(0, numberOfSignificantSignificandDigits) + 1)
-        ].join('');
-
-        return `<LKNumber ${binaryDigits} (${this.toNumber()})>`
+        return `<LKNumber ${this.toBinaryString(6, LKNumber.significandWidth)} (${this.toNumber()})>`
     }
 
+
+    // Returns a binary representation of the number
+    // Note that the exponent digits may be truncated: you can revert to the actual number
+    // by sign-extending based on the string's first digit
+    toBinaryString(fixedExponentWidth?: number, fixedSignificandWidth?: number): string {
+        const firstSignificantExponentDigit: number = (() => {
+            if (fixedExponentWidth !== undefined) {
+                return LKNumber.exponentWidth - fixedExponentWidth;
+            }
+            const minExpWidthInBinaryRepresentation = 6; // obviously this cannot be larger than the actual exponent width
+            const maxOffset = LKNumber.exponentWidth - minExpWidthInBinaryRepresentation;
+            if (this.exponentView[0] === 0) {
+                return Math.max(maxOffset, this.exponentView.indexOf(1) - 1);
+            } else {
+                const idx = this.exponentView.indexOf(0);
+                if (idx === -1) return maxOffset;
+                else return Math.min(maxOffset, idx);
+            }
+        })();
+        const lastSignificantSignificandDigit = fixedSignificandWidth !== undefined ? fixedSignificandWidth : Math.max(4, this.significandView.lastIndexOf(1) + 1);
+        return [
+            ...this.exponentView.subarray(firstSignificantExponentDigit),
+            '.',
+            ...this.significandView.subarray(0, lastSignificantSignificandDigit)
+        ].join('');
+    }
 
     toNumber(): number {
         let value = 0;

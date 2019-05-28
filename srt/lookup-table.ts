@@ -1,84 +1,108 @@
-import { LKNumber } from './number';
-import { any } from './utils';
+import { LKNumber } from './number.js';
+import { any, debugLog } from './utils.js';
+
+import * as LookupTableData from './lookup-table-data.js';
+
+export enum LookupTableBehaviour {
+    Correct, Incorrect_PentiumFDIV
+}
+
+const kRemainderInterval = 0.125;
+const kDivisorInterval = 1/16;
 
 
-export function lookupTable(remainder: LKNumber, divisor: LKNumber): number {
+function isPentiumFdivDefectiveCell(p: number, d: number): boolean {
+    return any(LookupTableData.pentium_fdiv_defective_cells, ([x, y]) => x === d && y === p);
+}
+
+export function lookupQuotientDigit(k: number, remainder: LKNumber, divisor: LKNumber, behaviour: LookupTableBehaviour): number {
     const p = remainder.toNumber();
-    const d = divisor.toNumber();
-
-    const D = (x: number) => x * d;
-
-    const p_d_in_pos = ([p_lower_bound, d_upper_bound_fraction]: [number, number]): boolean => {
-        // is p below the line?
-        return p < p_lower_bound && d >= 1 + (d_upper_bound_fraction/16);
-    };
-    const p_d_in_neg = ([p_lower_bound, d_upper_bound_fraction]: [number, number]): boolean => {
-        return p >= p_lower_bound && d >= 1 + (d_upper_bound_fraction/16);
-    };
-
-    if (p > D(8/3)) {
-        throw new RangeError('exceeded upper bound');
+    if (p === 0) return 0;
     
-    } else if (D(8/3) >= p && p > D(5/3)) {
-        return 2;
+    const d = divisor.toNumber();
+    const D = (x: number) => x * d;
+    
+    // offset from the s axis, in eights
+    const p_adj_flr = (p >= 0 ? Math.floor : Math.ceil)(p / kRemainderInterval);
+    // offset from the y axis, in sixteenths
+    const d_adj_flr = Math.floor((d - 1) / kDivisorInterval);
 
-    } else if (D(5/3) >= p && p > D(4/3)) {
-        const pairs = [
-            [1.5,   0],
-            [1.75,  2],
-            [2.0,   5],
-            [2.25,  8],
-            [2.5,  11],
-            [2.75, 14]
-        ];
-        if (any(pairs, p_d_in_pos)) return 2
-        else return 1;
+    debugLog(`p: ${p} (${p_adj_flr}), d: ${d} (${d_adj_flr})`);
 
-    } else if (D(4/3) >= p && p > D(2/3)) {
-        return 1;
-
-    } else if (D(2/3) >= p && p > D(1/3)) {
-        const pairs = [
-            [0.375, 0],
-            [0.5,   2],
-            [0.625, 8],
-            [0.75, 14]
-        ];
-        if (any(pairs, p_d_in_pos)) return 1;
-        else return 0;
-
-    } else if (D(1/3) >= p && p > D(-1/3)) {
+    if (p === 0) {
         return 0;
-
-    } else if (D(-1/3) >= p && p > D(-2/3)) {
-        const pairs = [
-            [-0.625, 0],
-            [-0.750, 2],
-            [-0.875, 8],
-            [-1.00, 14]
-        ];
-        if (any(pairs, p_d_in_neg)) return -0;
-        else return -1;
-
-    } else if (D(-2/3) >= p && p > D(-4/3)) {
-        return -1;
-
-    } else if (D(-4/3) >= p && p > D(-5/3)) {
-        const pairs = [
-            [-1.625,  0],
-            [-1.875,  2],
-            [-2.125,  5],
-            [-2.375,  8],
-            [-2.625, 11],
-            [-2.875, 14],
-        ];
-        if (any(pairs, p_d_in_neg)) return -1;
-        else return -2;
-
-    } else if (D(-5/3) >= p && p > D(-8/3)) {
-        return -2;
-
-    } else {
-        throw new RangeError(`exceeded lower bound, p: ${p}`);
     }
+
+    if (p > 0) {
+        if (p <= D(1/3)) {
+            return 0;
+        
+        } else if (p <= D(2/3)) {
+            for (const [x, y] of LookupTableData.pairs_1_3_pos) {
+                if (x <= d_adj_flr && y >= p_adj_flr) return 0;
+            }
+            return 1;
+        
+        } else if (p <= D(4/3)) {
+            return 1;
+        
+        } else if (p <= D(5/3)) {
+            for (const [x, y] of LookupTableData.pairs_4_3_pos) {
+                if (x <= d_adj_flr && y >= p_adj_flr) return 1;
+            }
+            return 2;
+        
+        } else {
+            if (behaviour === LookupTableBehaviour.Incorrect_PentiumFDIV && isPentiumFdivDefectiveCell(p_adj_flr, d_adj_flr)) {
+                debugLog('Hit defective cell');
+                return 0;
+            }
+
+            for (const [x, y] of LookupTableData.pairs_8_3_pos) {
+                if (x <= d_adj_flr && y >= p_adj_flr) return 2;
+            }
+            if (behaviour === LookupTableBehaviour.Correct) {
+                // The correct lookuop table behaviour should never reach this region of the table
+                throw new Error(`[lookup table] input combination (${p_adj_flr}, ${d_adj_flr}) exceeded upper table bound`);
+            }
+            return 0;
+        }
+    }
+
+    if (p < 0) {
+        if (p > D(-1/3)) {
+            return 0;
+        
+        } else if (p >= D(-2/3)) {
+            for (const [x, y] of LookupTableData.pairs_2_3_neg) {
+                if (x <= d_adj_flr && y < p_adj_flr) return 0;
+            }
+            return -1;
+        
+        } else if (p > D(-4/3)) {
+            return -1;
+        
+        } else if (p >= D(-5/3)) {
+            for (const [x, y] of LookupTableData.pairs_5_3_neg) {
+                if (x <= d_adj_flr && y <= p_adj_flr) return -1;
+            }
+            return -2;
+        
+        } else if (p > D(-8/3)) {
+            return -2;
+        
+        } else {
+            for (const [x, y] of LookupTableData.pairs_8_3_neg) {
+                if (x <= d_adj_flr && y <= p_adj_flr) return -2;
+            }
+
+            if (behaviour === LookupTableBehaviour.Correct) {
+                // The correct lookuop table behaviour should never reach this region of the table
+                throw new Error(`[lookup table] input combination (${p_adj_flr}, ${d_adj_flr}) exceeded lower table bound`);
+            }
+            return 0;
+        }
+    }
+
+    throw new Error(`[lookup table] unhandled input combination (${p_adj_flr}, ${d_adj_flr})`);
 }
