@@ -1,3 +1,6 @@
+// TODO: in the assembled results, mark everything after an incorrect guess red
+
+
 import { LKNumber } from '../srt/number.js';
 import { LookupTableBehaviour } from '../srt/lookup-table.js';
 import { srt, DivisionResult, DivisionStep, assembleQuotientDigitsIntoResult } from '../srt/srt.js';
@@ -200,8 +203,15 @@ async function didClickCalculateButton() {
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('calc-button').addEventListener('click', didClickCalculateButton);
+    Array.from(document.getElementsByClassName('fraction-input')).forEach(elem => {
+        elem.addEventListener('keyup', event => {
+            if (event instanceof KeyboardEvent && event.key === 'Enter') {
+                didClickCalculateButton();
+            }
+        })
+    })
     
-    dividendInputField.value = '4195835';
-    divisorInputField.value = '3145727';
+    // dividendInputField.value = '4195835';
+    // divisorInputField.value = '3145727';
     // setTimeout(didClickCalculateButton, 1000);
 });
