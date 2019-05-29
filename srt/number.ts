@@ -188,14 +188,17 @@ export class LKNumber {
         return retval;
     }
 
-
     shift_left(x: number) {
-        LKNumber.shift_left_imp(this.fullBitPattern, x);
+        if (x === 0) return;
+        else if (x < 0) this.shift_right(Math.abs(x));
+        else LKNumber.shift_left_imp(this.fullBitPattern, x);
     }
 
 
     shift_right(x: number) {
-        LKNumber.shift_right_sext_imp(this.fullBitPattern, x);
+        if (x === 0) return;
+        else if (x < 0) this.shift_left(Math.abs(x));
+        else LKNumber.shift_right_sext_imp(this.fullBitPattern, x);
     }
 
 
