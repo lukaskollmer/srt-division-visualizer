@@ -6,11 +6,15 @@
 ! - %ITERATION_INDEX_NEXT%    index of the next iteration
 ! - %QUOTIENT_GUESS%          the quotient digit guessed in the current iteration
 ! - %QUOTIENT_DIGITS%         all quotient digits guessed so far, including the current iteration's guess, separated by commas
+! - %ASS_QUOTIENT_UNSHIFTED%  the unshifted assembled quotient for the current iteration
+! - %ASS_QUOTIENT%            the shifted assembled quotient for the current iteration
+! - %INPUT_EXP_DIFF%          exp(dividend) - exp(divisor) (of the base 2 representation)
 ! - %CARRY_PREV%              carry at the beginning of the iteration
 ! - %CARRY_PREV_APPROX%       approximated carry at the beginning of the iteration
 ! - %REMAINDER_PREV%          remainder at the beginning of the iteration
 ! - %REMAINDER_PREV_APPROX%   approximated remainder at the beginning of the iteration
 ! - %REMAINDER_APPROX%        approximated remainder, after adding CARRY_PREV_APPROX
+! - %QD_SHIFTED_B4_NEG%       qd after shift (multiplication) but before negating
 ! - %NEG_QD%                  -d_{k} * d
 ! - %CARRY_UNSHIFTED%         carry after the current iteration, unshifted
 ! - %CARRY_SHIFTED%           carry after the current iteration, shifted
@@ -45,7 +49,7 @@
                             $$
                         </p>
                         <p class="latex">
-                            $$q = [%QUOTIENT_DIGITS%]$$
+                            $$q = [%QUOTIENT_DIGITS%]_{%RADIX%} = %ASS_QUOTIENT_UNSHIFTED% * 2^{%INPUT_EXP_DIFF%} = %ASS_QUOTIENT%$$
                         </p>
                     </li>
                 </ul>
@@ -59,7 +63,7 @@
                             $$
                             \begin{align*}
                                 -q_{%ITERATION_INDEX%}d \ &=\ %QUOTIENT_GUESS%_{10} * %DIVISOR%_{2} \\
-                                &=\ -(%DIVISOR%_{2} \mathrel{<<} \lfloor%QUOTIENT_GUESS%\rfloor) \\
+                                &=\ -(%QD_SHIFTED_B4_NEG%_{2} \\
                                 &=\ %NEG_QD%_{2} \\
                             \end{align*}
                             $$

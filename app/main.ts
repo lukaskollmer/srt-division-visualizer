@@ -134,8 +134,11 @@ async function didClickCalculateButton() {
 
     document.getElementById('input_formula').innerHTML = MathJaxUtils.createHeaderEquation(dividend, divisor, incorrectResult);
 
+
     let hadInvalidLookupDigit = false;
     const quotientDigitsList: string[] = [];
+
+    const [exp_dividend, exp_divisor] = [incorrectResult.normalizedDividend[1], incorrectResult.normalizedDivisor[1]];
 
     for (let k = 0; k < precision; k++) {
         const step = incorrectResult.steps[k];
@@ -147,6 +150,8 @@ async function didClickCalculateButton() {
             quotientDigitsList.push(step.quotientGuess.toString());
         }
 
+        const [ass_unshifted, ass_shifted] = assembleQuotientDigitsIntoResult(step.quotientDigits, exp_dividend, exp_divisor);
+
         const toBinary = (x: LKNumber) => x.toBinaryString(4, LKNumber.significandWidth);
 
         const html = iterationStepTemplate.substitute({
@@ -157,11 +162,15 @@ async function didClickCalculateButton() {
             ITERATION_INDEX_NEXT:   k+1,
             QUOTIENT_GUESS:         quotientDigitsList[k],
             QUOTIENT_DIGITS:        quotientDigitsList.join(', '),
+            ASS_QUOTIENT_UNSHIFTED: ass_unshifted.toNumber(),
+            ASS_QUOTIENT:           ass_shifted.toNumber(),
+            INPUT_EXP_DIFF:         exp_dividend - exp_divisor,
             CARRY_PREV:             toBinary(step.prevCarry),
             CARRY_PREV_APPROX:      step.prevCarry.toBinaryString(4, 3),
             REMAINDER_PREV:         toBinary(step.prevRemainder),
             REMAINDER_PREV_APPROX:  step.prevRemainder.toBinaryString(4, 3),
             REMAINDER_APPROX:       step.approximatedRemainder.toBinaryString(4, 3),
+            QD_SHIFTED_B4_NEG:      toBinary(step.qD_before_bit_flip),
             NEG_QD:                 toBinary(step.qD),
             CARRY_UNSHIFTED:        toBinary(step.carryBeforeShift),
             CARRY_SHIFTED:          toBinary(step.carry),
