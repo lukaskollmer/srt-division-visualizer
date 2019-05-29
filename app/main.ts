@@ -1,8 +1,11 @@
 import { LKNumber } from '../srt/number.js';
 import { LookupTableBehaviour } from '../srt/lookup-table.js';
-import { srt, DivisionResult, DivisionStep } from '../srt/srt.js';
+import { srt, DivisionResult, DivisionStep, assembleQuotientDigitsIntoResult } from '../srt/srt.js';
 import { DOMGen, MathJaxUtils } from './util.js';
 import { config } from '../srt/utils.js';
+
+// Not sure why but for some reason typescript refuses to use the definitions from @types/chart.js :/
+declare const Chart: any;
 
 
 let iterationStepTemplate: StringTemplate = null;
@@ -76,11 +79,43 @@ class StringTemplate {
 }
 
 
+
+function drawChartForQuotientGuesses(result: DivisionResult) {
+    return;
+
+    const element = document.getElementById('quotient-guess-chart') as HTMLCanvasElement;
+    const ctx = element.getContext('2d');
+    const data = result.steps.map((step, k) => {
+        const value = assembleQuotientDigitsIntoResult(
+            step.quotientDigits,
+            result.normalizedDividend[1],
+            result.normalizedDivisor[1]
+        )[1].toNumber();
+        return {
+            x: k,
+            y: value
+        }
+    })
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: result.steps.map((_, i) => i),
+            datasets: [{
+                label: 'label',
+                data: data  
+            }]
+        }
+    });
+}
+
+
+
+
 async function didClickCalculateButton() {
     if (iterationStepTemplate === null) {
         throw 'FOOKIN HELL';
     }
-    const precision = 30;
+    const precision = 12;
     const dividendRawValue = dividendInputField.value;
     const divisorRawValue = divisorInputField.value;
 
@@ -99,8 +134,20 @@ async function didClickCalculateButton() {
 
     document.getElementById('input_formula').innerHTML = MathJaxUtils.createHeaderEquation(dividend, divisor, incorrectResult);
 
+    let hadInvalidLookupDigit = false;
+    const quotientDigitsList: string[] = [];
+
     for (let k = 0; k < precision; k++) {
         const step = incorrectResult.steps[k];
+
+        if (hadInvalidLookupDigit || step.isGuessFromInvalidLookupTableArea) {
+            hadInvalidLookupDigit = true;
+            quotientDigitsList.push(`\\color{red}{${step.quotientGuess}}`);
+        } else {
+            quotientDigitsList.push(step.quotientGuess.toString());
+        }
+
+        const toBinary = (x: LKNumber) => x.toBinaryString(4, LKNumber.significandWidth);
 
         const html = iterationStepTemplate.substitute({
             RADIX:                  config.RADIX,
@@ -108,18 +155,18 @@ async function didClickCalculateButton() {
             DIVISOR_APPROX:         incorrectResult.approximatedDivisor.toBinaryString(1, 4),
             ITERATION_INDEX:        k,
             ITERATION_INDEX_NEXT:   k+1,
-            QUOTIENT_GUESS:         step.quotientGuess,
-            QUOTIENT_DIGITS:        step.quotientDigits.join(', '),
-            CARRY_PREV:             step.prevCarry.toBinaryString(4, LKNumber.significandWidth),
+            QUOTIENT_GUESS:         quotientDigitsList[k],
+            QUOTIENT_DIGITS:        quotientDigitsList.join(', '),
+            CARRY_PREV:             toBinary(step.prevCarry),
             CARRY_PREV_APPROX:      step.prevCarry.toBinaryString(4, 3),
-            REMAINDER_PREV:         step.prevRemainder.toBinaryString(4, LKNumber.significandWidth),
+            REMAINDER_PREV:         toBinary(step.prevRemainder),
             REMAINDER_PREV_APPROX:  step.prevRemainder.toBinaryString(4, 3),
             REMAINDER_APPROX:       step.approximatedRemainder.toBinaryString(4, 3),
-            NEG_QD:                 step.qD.toBinaryString(4, LKNumber.significandWidth),
-            CARRY_UNSHIFTED:        step.carryBeforeShift.toBinaryString(4, LKNumber.significandWidth),
-            CARRY_SHIFTED:          step.carry.toBinaryString(4, LKNumber.significandWidth),
-            REMAINDER_UNSHIFTED:    step.remainderBeforeShift.toBinaryString(4, LKNumber.significandWidth),
-            REMAINDER_SHIFTED:      step.remainder.toBinaryString(4, LKNumber.significandWidth),
+            NEG_QD:                 toBinary(step.qD),
+            CARRY_UNSHIFTED:        toBinary(step.carryBeforeShift),
+            CARRY_SHIFTED:          toBinary(step.carry),
+            REMAINDER_UNSHIFTED:    toBinary(step.remainderBeforeShift),
+            REMAINDER_SHIFTED:      toBinary(step.remainder),
         });
 
         const p = new DOMParser();
@@ -128,6 +175,7 @@ async function didClickCalculateButton() {
         DOMGen.insert(d.firstChild.childNodes[1].firstChild as HTMLElement);
     }
 
+    // drawChartForQuotientGuesses(incorrectResult);
 
     MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
 }
@@ -142,13 +190,9 @@ async function didClickCalculateButton() {
 
 
 document.addEventListener('DOMContentLoaded', () => {
-    // dividendInputField.value = '5506153';
-    // divisorInputField.value = '294911';
-
+    document.getElementById('calc-button').addEventListener('click', didClickCalculateButton);
+    
     dividendInputField.value = '4195835';
     divisorInputField.value = '3145727';
-
-    document.getElementById('calc-button').addEventListener('click', didClickCalculateButton);
-
-    setTimeout(didClickCalculateButton, 750);
+    // setTimeout(didClickCalculateButton, 1000);
 });

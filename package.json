@@ -7,6 +7,7 @@
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
+    "@types/chart.js": "^2.7.53",
     "@types/mathjax": "0.0.35"
   }
 }

@@ -6,6 +6,7 @@ import { config, debugLog } from "./utils.js";
 export class DivisionStep {
     quotientDigits: number[];
     quotientGuess: number;
+    isGuessFromInvalidLookupTableArea: boolean;
     prevCarry: LKNumber;
     prevRemainder: LKNumber;
     approximatedRemainder: LKNumber;
@@ -53,15 +54,10 @@ function _calc_approx_remainder(carry: LKNumber, remainder: LKNumber): LKNumber 
 }
 
 
-// "The easy way"
-// TODO reimplement this
-function assembleQuotientDigitsIntoResult_imp1(quot_digits: number[], exp_dividend: number, exp_divisor: number): LKNumber {
-    return new LKNumber(quot_digits.reduce((acc, q, i) => acc + q * Math.pow(config.RADIX, -i), 0)).mul(2 * (exp_dividend - exp_divisor));
-}
-
 
 // "The other way"
-function assembleQuotientDigitsIntoResult_imp2(quot_digits: number[], exp_dividend: number, exp_divisor: number): [LKNumber, LKNumber] {
+// Returns a tuple containing the unshifted and shifted value
+export function assembleQuotientDigitsIntoResult(quot_digits: number[], exp_dividend: number, exp_divisor: number): [LKNumber, LKNumber] {
     const q_pos = new LKNumber();
     const q_neg = new LKNumber();
     
@@ -127,7 +123,9 @@ export function srt(_dividend: LKNumber, _divisor: LKNumber, N: number, lookupTa
         const approx_remainder = _calc_approx_remainder(carry, remainder);
         step.approximatedRemainder = approx_remainder.copy();
         debugLog(`- ar: ${approx_remainder}`);
-        const quot_guess = step.quotientGuess = lookupQuotientDigit(k, approx_remainder, divisor_approx, lookupTableBehaviour);
+        [step.quotientGuess, step.isGuessFromInvalidLookupTableArea] = lookupQuotientDigit(k, approx_remainder, divisor_approx, lookupTableBehaviour);
+        const quot_guess = step.quotientGuess;
+        //const quot_guess = step.quotientGuess = lookupQuotientDigit(k, approx_remainder, divisor_approx, lookupTableBehaviour);
         debugLog(`- q: ${quot_guess}`);
         
         const qD = divisor.mul(Math.abs(quot_guess));
@@ -171,7 +169,7 @@ export function srt(_dividend: LKNumber, _divisor: LKNumber, N: number, lookupTa
     result.normalizedDivisor = [divisor, exp_divisor];
     result.approximatedDivisor = divisor_approx;
     result.lookupTableBehaviour = lookupTableBehaviour;
-    [result.value_unshifted, result.value] = assembleQuotientDigitsIntoResult_imp2(quot_digits, exp_dividend, exp_divisor);
+    [result.value_unshifted, result.value] = assembleQuotientDigitsIntoResult(quot_digits, exp_dividend, exp_divisor);
     result.steps = steps;
     result.quotientDigits = quot_digits;
     
