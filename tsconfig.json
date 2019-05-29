@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
+        "module": "es6",
         "target": "es2016",
         "jsx": "preserve",
         "outDir": "build",
@@ -8,6 +8,13 @@
         "noImplicitAny": true
     },
     "include": [
-        "srt/*"
+        "srt/*",
+        "app/*"
+    ],
+    "exclude": [
+        "node_modules/*"
+    ],
+    "typesRoot": [
+        "node_modules/@types"
     ]
 }

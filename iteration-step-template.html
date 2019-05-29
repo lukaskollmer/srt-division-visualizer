@@ -1,0 +1,98 @@
+! Parameters:
+! - %RADIX%                   radix
+! - %DIVISOR%                 full divisor
+! - %DIVISOR_APPROX%          the approximated divisor
+! - %ITERATION_INDEX%         index of the current iteration
+! - %ITERATION_INDEX_NEXT%    index of the next iteration
+! - %QUOTIENT_GUESS%          the quotient digit guessed in the current iteration
+! - %QUOTIENT_DIGITS%         all quotient digits guessed so far, including the current iteration's guess, separated by commas
+! - %CARRY_PREV%              carry at the beginning of the iteration
+! - %CARRY_PREV_APPROX%       approximated carry at the beginning of the iteration
+! - %REMAINDER_PREV%          remainder at the beginning of the iteration
+! - %REMAINDER_PREV_APPROX%   approximated remainder at the beginning of the iteration
+! - %REMAINDER_APPROX%        approximated remainder, after adding CARRY_PREV_APPROX
+! - %NEG_QD%                  -d_{k} * d
+! - %CARRY_UNSHIFTED%         carry after the current iteration, unshifted
+! - %CARRY_SHIFTED%           carry after the current iteration, shifted
+! - %REMAINDER_UNSHIFTED%     remainder after the current iteration, unshifted
+! - %REMAINDER_SHIFTED%       remainder after the current iteration, shifted
+
+<div class="row iteration-step-row">
+    <div class="twelve columns">
+        <h3 class="iteration-step-title">Iteration %ITERATION_INDEX%</h3>
+        <ul>
+            <li>
+                <span>Choose quotient digit $$q_{%ITERATION_INDEX%}$$</span>
+                <ul>
+                    <li>
+                        <span>Approximate remainder</span>
+                        <p class="latex">
+                            $$
+                            \begin{array}{cll}
+                                  & %CARRY_PREV_APPROX%_{2}     & \quad \text{(carry)}            \\
+                                + & %REMAINDER_PREV_APPROX%_{2} & \quad \text{(prev. remainder)}   \\
+                                \hline
+                                  & %REMAINDER_APPROX%_{2}      & \quad \text{(approx. remainder)} \\
+                            \end{array}
+                            $$
+                        </p>
+                    </li>
+                    <li>
+                        <span>Look up quotient digit</span>
+                        <p class="latex">
+                            $$
+                            q_{%ITERATION_INDEX%} = \text{lookup_table}(p: %REMAINDER_APPROX%_{2}, d: %DIVISOR_APPROX%_{2}) = %QUOTIENT_GUESS%
+                            $$
+                        </p>
+                        <p class="latex">
+                            $$q = [%QUOTIENT_DIGITS%]$$
+                        </p>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <span>Calculate $$c_{%ITERATION_INDEX_NEXT%}, r_{%ITERATION_INDEX_NEXT%} = c_{%ITERATION_INDEX%} + r_{%ITERATION_INDEX%} + (-q_{%ITERATION_INDEX%}d)$$</span>
+                <ul>
+                    <li>
+                        <span>Multiply the quotient digit guess w/ the divisor:</span>
+                        <p class="latex">
+                            $$
+                            \begin{align*}
+                                -q_{%ITERATION_INDEX%}d \ &=\ %QUOTIENT_GUESS%_{10} * %DIVISOR%_{2} \\
+                                &=\ -(%DIVISOR%_{2} \mathrel{<<} \lfloor%QUOTIENT_GUESS%\rfloor) \\
+                                &=\ %NEG_QD%_{2} \\
+                            \end{align*}
+                            $$
+                        </p>
+                    </li>
+                    <li>
+                        <span>$$c_{%ITERATION_INDEX_NEXT%} + r_{%ITERATION_INDEX_NEXT%} = c_{%ITERATION_INDEX%} + r_{%ITERATION_INDEX%} + (-q_{%ITERATION_INDEX%}d):$$</span>
+                        <p class="latex">
+                            $$
+                            \begin{array}{cll}
+                                  & %CARRY_PREV%_{2}            & \quad c_{%ITERATION_INDEX%}       \\
+                                + & %REMAINDER_PREV%_{2}        & \quad r_{%ITERATION_INDEX%}       \\
+                                + & %NEG_QD%_{2}                & \quad -q_{%ITERATION_INDEX%}d     \\
+                                \hline
+                                  & %CARRY_UNSHIFTED%_{2}       & \quad c_{%ITERATION_INDEX_NEXT%}  \\
+                                  & %REMAINDER_UNSHIFTED%_{2}   & \quad r_{%ITERATION_INDEX_NEXT%}
+                            \end{array}
+                            $$
+                        </p>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <span>$$c_{%ITERATION_INDEX_NEXT%}, r_{%ITERATION_INDEX_NEXT%} \mathrel{*}= %RADIX%:$$</span>
+                <p class="latex">
+                    $$
+                    \begin{align*}
+                        c_{%ITERATION_INDEX_NEXT%} &= %CARRY_SHIFTED%_{2} \\
+                        r_{%ITERATION_INDEX_NEXT%} &= %REMAINDER_SHIFTED%_{2} \\
+                    \end{align*}
+                    $$
+                </p>
+            </li>
+        </ul>
+    </div>
+</div>

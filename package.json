@@ -1,0 +1,12 @@
+{
+  "name": "srt-division-visualizer",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "author": "Lukas Kollmer <lukas.kollmer@gmail.com>",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/mathjax": "0.0.35"
+  }
+}

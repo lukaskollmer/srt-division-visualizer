@@ -7,7 +7,7 @@ export class LKNumber {
     }
     
     static get significandWidth(): number {
-        return 128;
+        return 64;
     }
     
     static get bitPatternWidth(): number {

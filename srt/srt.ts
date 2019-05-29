@@ -9,6 +9,7 @@ export class DivisionStep {
     prevCarry: LKNumber;
     prevRemainder: LKNumber;
     approximatedRemainder: LKNumber;
+    qD_before_bit_flip: LKNumber;
     qD: LKNumber;
     carry: LKNumber;
     carryBeforeShift: LKNumber;
@@ -20,6 +21,7 @@ export class DivisionStep {
 export class DivisionResult {
     normalizedDividend: [LKNumber, number];
     normalizedDivisor: [LKNumber, number];
+    approximatedDivisor: LKNumber;
     lookupTableBehaviour: LookupTableBehaviour;
     value: LKNumber;
     value_unshifted: LKNumber;
@@ -122,17 +124,20 @@ export function srt(_dividend: LKNumber, _divisor: LKNumber, N: number, lookupTa
         debugLog(`- pc: ${carry}`);
         debugLog(`- pr: ${remainder}`);
         
-        const approx_remainder = step.approximatedRemainder = _calc_approx_remainder(carry, remainder);
+        const approx_remainder = _calc_approx_remainder(carry, remainder);
+        step.approximatedRemainder = approx_remainder.copy();
         debugLog(`- ar: ${approx_remainder}`);
         const quot_guess = step.quotientGuess = lookupQuotientDigit(k, approx_remainder, divisor_approx, lookupTableBehaviour);
         debugLog(`- q: ${quot_guess}`);
         
-        const dQ = step.qD = divisor.mul(Math.abs(quot_guess));
+        const qD = divisor.mul(Math.abs(quot_guess));
+        step.qD_before_bit_flip = qD.copy();
         if (quot_guess > 0) {
-            dQ.flipBits();
+            qD.flipBits();
         }
+        step.qD = qD.copy();
         
-        [remainder, carry] = remainder.add_carrySave(carry, dQ);
+        [remainder, carry] = remainder.add_carrySave(carry, qD);
         if (quot_guess > 0) {
             carry.fullBitPattern[LKNumber.bitPatternWidth - 1] = 1;
         }
@@ -164,6 +169,7 @@ export function srt(_dividend: LKNumber, _divisor: LKNumber, N: number, lookupTa
     const result = new DivisionResult();
     result.normalizedDividend = [dividend, exp_dividend];
     result.normalizedDivisor = [divisor, exp_divisor];
+    result.approximatedDivisor = divisor_approx;
     result.lookupTableBehaviour = lookupTableBehaviour;
     [result.value_unshifted, result.value] = assembleQuotientDigitsIntoResult_imp2(quot_digits, exp_dividend, exp_divisor);
     result.steps = steps;

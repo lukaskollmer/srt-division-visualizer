@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="utf-8">
+    <title>srt-division-visualizer</title>
+    
+    <meta name="description" content="SRT Division Algorithm Visualizer">
+    <meta name="author" content="Lukas Kollmer">
+    
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <link rel="stylesheet" href="https://files.lukaskollmer.me/skeleton/normalize.css">
+    <link rel="stylesheet" href="https://files.lukaskollmer.me/skeleton/skeleton.css">
+    
+    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css?family=Roboto');
+        :root {
+            --input-fraction-to-button-margin: 20px;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        .monospaced, #number-preview {
+            font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+        }
+        
+        h1 {
+            font-size: xx-large;
+            font-weight: 350;
+        }
+        
+        h3 {
+            font-size: x-large;
+        }
+        
+        h4 {
+            font-size: large;
+            font-weight: 400;
+        }
+        
+        ul {
+            list-style-position: outside;
+        }
+        
+        .centered {
+            text-align: center;
+            align-content: center;
+        }
+        
+        #input {
+            display: flex;
+            margin: auto;
+            align-items: center;
+        }
+        
+        #input-button-wrapper {
+            margin: auto auto auto calc(var(--input-fraction-to-button-margin) / 2);
+        }
+        
+        #d1, #d2 {
+            border-style: none;
+            margin: 5px auto;
+            position: relative;
+            width: 90%;
+            text-align: center;
+            background-color: #f4f6f7;
+            transition: background-color 0.5s ease;
+            font-size: 115%;
+            /* font-weight: bold; */
+        }
+        
+        #d1:hover, #d2:hover {
+            background-color: #F1F3F4;
+        }
+        
+        #fraction {
+            margin: auto calc(var(--input-fraction-to-button-margin) / 2) auto auto;
+            width: 200px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #fraction-divider {
+            background-color: black;
+            position: relative;
+            height: 2px;
+            width: 100%;
+        }
+        
+        .mjx-chtml, .MJXc-display {
+            margin: 0px !important;
+            padding: 0px !important;
+            text-align: left !important;
+            display: inline !important;
+        }
+        
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+        }
+        
+        .iteration-index-header {
+            margin: 15px 0px 5px 0px;
+        }
+        
+        .iteration-step-title {
+            margin-bottom: 6px;
+        }
+        
+        .iteration-step-row {
+            margin-top: 5%;
+        }
+        
+        .iteration-step-hr {
+            margin: 12px 0px;
+            background-color: red;
+        }
+        
+        p.latex {
+            margin: 10px 0px;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container" id="main">
+        <div class="row">
+            <div class="twelve columns" style="margin-top: 5%">
+                <h1>SRT Division Visualizer</h1>
+            </div>
+        </div>
+        
+        <div class="row" style="margin-top: 5%">
+            <div class="twelve columns">
+                <div id="input" class="centered" style="background-color: white">
+                    <div id="fraction">
+                        <input type="number" id="d1" class="fraction-input monospaced" placeholder="dividend">
+                        <div id="fraction-divider"></div>
+                        <input type="number" id="d2" class="fraction-input monospaced" placeholder="divisor">
+                    </div>
+                    <div id="input-button-wrapper">
+                        <button id='calc-button'>calculate</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 5%"></div>
+        
+        <div class="row" id="insertion_marker">
+            <div class="twelve columns">
+                <h3>Input</h3>
+                <div class="centered" id="input_formula"></div>
+            </div>
+        </div>
+        
+        
+        <div class="row" style="margin-top: 8%">
+            <div class="twelve columns">
+                <h3>Further reading:</h3>
+                <ul>
+                    <li><a href="https://files.lukaskollmer.me/925-934.pdf">Higher-Radix Division Using Estimates of the Divisor and Partial Remainders</a></li>
+                    <li><a href="https://files.lukaskollmer.me/intel_whitepaper.pdf">Statistical Analysis of Floating Point Flaw in the Pentium Processor (1994)</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        
+        <div class="row" style="margin-top: 4%; margin-bottom: 2%">
+            <hr>
+            <div class="twelve columns centered">
+                <p>Made by <a href="https://lukaskollmer.me">Lukas Kollmer</a>. View on <a target="_blank" href="https://github.com/lukaskollmer/srt-division-visualizer">GitHub</a></p>
+            </div>
+        </div>
+        
+    </div>
+    <script type="module" src="./build/app/main.js"></script>
+</body>
+</html>
