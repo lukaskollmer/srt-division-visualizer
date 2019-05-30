@@ -6,7 +6,8 @@
   "author": "Lukas Kollmer <lukas.kollmer@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "test": "tsc --module commonjs && node build/srt/tests.js"
   },
   "dependencies": {},
   "devDependencies": {
