@@ -9,6 +9,8 @@ This project was created as part of the IN0014 seminar [Analyse von Softwarebugs
 - Build instructions: `npm i && npm run build`
 - Run some sample divisions: `npm test` (Enable debug logging by changing the `config.DEBUG` assignment in [`tests.ts`](/srt/tests.ts))
 
+## Other resources
+- [The Pentium's FDIV lookup table](https://docs.google.com/spreadsheets/d/1L6T_SfR-T6IQwE8KTKssrxZpG9ZIDXapkZ6eCQ_Jt3w/edit?usp=sharing)
 
 
 ## Further reading
