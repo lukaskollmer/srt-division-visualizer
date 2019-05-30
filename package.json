@@ -5,9 +5,13 @@
   "keywords": [],
   "author": "Lukas Kollmer <lukas.kollmer@gmail.com>",
   "license": "MIT",
+  "scripts": {
+    "build": "tsc"
+  },
   "dependencies": {},
   "devDependencies": {
     "@types/chart.js": "^2.7.53",
-    "@types/mathjax": "0.0.35"
+    "@types/mathjax": "0.0.35",
+    "typescript": "^3.5.1"
   }
 }
