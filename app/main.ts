@@ -1,14 +1,11 @@
 // TODO: in the assembled results, mark everything after an incorrect guess red
 
-
 import { LKNumber } from '../srt/number.js';
 import { LookupTableBehaviour } from '../srt/lookup-table.js';
 import { srt, DivisionResult, DivisionStep, assembleQuotientDigitsIntoResult } from '../srt/srt.js';
 import { DOMGen, MathJaxUtils } from './util.js';
 import { config } from '../srt/utils.js';
 
-// Not sure why but for some reason typescript refuses to use the definitions from @types/chart.js :/
-declare const Chart: any;
 
 
 let iterationStepTemplate: StringTemplate = null;
@@ -80,38 +77,6 @@ class StringTemplate {
         return components.join('');
     }
 }
-
-
-
-function drawChartForQuotientGuesses(result: DivisionResult) {
-    return;
-
-    const element = document.getElementById('quotient-guess-chart') as HTMLCanvasElement;
-    const ctx = element.getContext('2d');
-    const data = result.steps.map((step, k) => {
-        const value = assembleQuotientDigitsIntoResult(
-            step.quotientDigits,
-            result.normalizedDividend[1],
-            result.normalizedDivisor[1]
-        )[1].toNumber();
-        return {
-            x: k,
-            y: value
-        }
-    })
-    const chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: result.steps.map((_, i) => i),
-            datasets: [{
-                label: 'label',
-                data: data  
-            }]
-        }
-    });
-}
-
-
 
 
 async function didClickCalculateButton() {
@@ -187,8 +152,6 @@ async function didClickCalculateButton() {
         DOMGen.insert(d.firstChild.childNodes[1].firstChild as HTMLElement);
     }
 
-    // drawChartForQuotientGuesses(incorrectResult);
-
     MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
 }
 
@@ -203,13 +166,14 @@ async function didClickCalculateButton() {
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('calc-button').addEventListener('click', didClickCalculateButton);
-    Array.from(document.getElementsByClassName('fraction-input')).forEach(elem => {
+
+    for (const elem of document.getElementsByClassName('fraction-input')) {
         elem.addEventListener('keyup', event => {
             if (event instanceof KeyboardEvent && event.key === 'Enter') {
                 didClickCalculateButton();
             }
         })
-    })
+    }
     
     // dividendInputField.value = '4195835';
     // divisorInputField.value = '3145727';
