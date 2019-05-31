@@ -3,17 +3,23 @@
 import { LKNumber } from '../srt/number.js';
 import { LookupTableBehaviour } from '../srt/lookup-table.js';
 import { srt, DivisionResult, DivisionStep, assembleQuotientDigitsIntoResult } from '../srt/srt.js';
-import { DOMGen, MathJaxUtils } from './util.js';
+import { DOMGen, MathJaxUtils, Settings } from './util.js';
 import { config } from '../srt/utils.js';
 
 
 
+function getElementById<T extends HTMLElement>(id: string): T {
+    return document.getElementById(id) as T;
+}
+
+
 let iterationStepTemplate: StringTemplate = null;
 
-const dividendInputField   = document.getElementById('input.dividend') as HTMLInputElement;
-const divisorInputField    = document.getElementById('input.divisor') as HTMLInputElement;
-const precisionInputField  = document.getElementById('input.precision') as HTMLInputElement;
-const lookupBehaviourInput = document.getElementById('input.lookup-behaviour') as HTMLSelectElement;
+const dividendInputField   = getElementById<HTMLInputElement>('input.dividend');
+const divisorInputField    = getElementById<HTMLInputElement>('input.divisor');
+const precisionInputField  = getElementById<HTMLInputElement>('input.precision');
+const lookupBehaviourInput = getElementById<HTMLSelectElement>('input.lookup-behaviour');
+const numDigitsInput       = getElementById<HTMLInputElement>('input.num-digits');
 
 const domParser = new DOMParser();
 
@@ -127,33 +133,16 @@ function didClickCalculateButton() {
         return;
     }
 
-
-    const lookupBehaviour = getSelectedLookupTableBehaviour();
-
-    const result = srt(dividend, divisor, precision, lookupBehaviour);
-    const shiftedFinalResult = result.value.copy(); shiftedFinalResult.shift_left(exp_dividend - exp_divisor);
-
-    document.getElementById('input_formula').innerHTML = MathJaxUtils.createHeaderEquation(
-        [dividendValue, dividend, exp_dividend],
-        [divisorValue, divisor, exp_divisor],
-        result,
-        shiftedFinalResult
-    );
-
-
+    const result = srt(dividend, divisor, precision, getSelectedLookupTableBehaviour());
 
     let hadInvalidLookupDigit = false;
-    const quotientDigitsList: string[] = [];
+    const coloredQuotientDigits: string[] = [];
 
     for (let k = 0; k < precision; k++) {
         const step = result.steps[k];
-
-        if (hadInvalidLookupDigit || step.isGuessFromInvalidLookupTableArea) {
-            hadInvalidLookupDigit = true;
-            quotientDigitsList.push(`\\color{red}{${step.quotientGuess}}`);
-        } else {
-            quotientDigitsList.push(step.quotientGuess.toString());
-        }
+        
+        hadInvalidLookupDigit = hadInvalidLookupDigit || step.isGuessFromInvalidLookupTableArea;
+        coloredQuotientDigits.push(`\\href{#${k}}{\\color{${hadInvalidLookupDigit ? 'red' : 'black'}}{${step.quotientGuess}}}`);
 
         const ass_unshifted = assembleQuotientDigitsIntoResult(step.quotientDigits);
         const ass_shifted = ass_unshifted.copy(); ass_shifted.shift_left(exp_dividend - exp_divisor);
@@ -166,8 +155,8 @@ function didClickCalculateButton() {
             DIVISOR_APPROX:         result.approximatedDivisor.toBinaryString(1, 4),
             ITERATION_INDEX:        k,
             ITERATION_INDEX_NEXT:   k+1,
-            QUOTIENT_GUESS:         quotientDigitsList[k],
-            QUOTIENT_DIGITS:        quotientDigitsList.join(', '),
+            QUOTIENT_GUESS:         coloredQuotientDigits[k],
+            QUOTIENT_DIGITS:        coloredQuotientDigits.join(', '),
             ASS_QUOTIENT_UNSHIFTED: ass_unshifted.toNumber(),
             ASS_QUOTIENT:           ass_shifted.toNumber(),
             INPUT_EXP_DIFF:         exp_dividend - exp_divisor,
@@ -187,6 +176,17 @@ function didClickCalculateButton() {
         const dom = domParser.parseFromString(html, 'text/html');
         DOMGen.insert(dom.firstChild.childNodes[1].firstChild as HTMLElement);
     }
+
+    DOMGen.insert(document.createElement('hr'));
+
+    const shiftedFinalResult = result.value.copy(); shiftedFinalResult.shift_left(exp_dividend - exp_divisor);
+    document.getElementById('input_formula').innerHTML = MathJaxUtils.createHeaderEquation(
+        [dividendValue, dividend, exp_dividend],
+        [divisorValue, divisor, exp_divisor],
+        result,
+        shiftedFinalResult,
+        coloredQuotientDigits
+    );
 
     MathJax.Hub.Queue(['Typeset', MathJax.Hub]);
 }
@@ -210,8 +210,36 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         })
     }
+
+    // Set initial values
+    dividendInputField.value   = Settings.get(Settings.Key.dividend).toString();
+    divisorInputField.value    = Settings.get(Settings.Key.divisor).toString();
+    precisionInputField.value  = Settings.get(Settings.Key.precision).toString();
+    lookupBehaviourInput.value = Settings.get(Settings.Key.lookupBehaviour);
+
+
+    dividendInputField.addEventListener('change', function() {
+        Settings.set(Settings.Key.dividend, parseInt(this.value));
+    });
+    divisorInputField.addEventListener('change', function() {
+        Settings.set(Settings.Key.divisor, parseInt(this.value));
+    });
+    precisionInputField.addEventListener('change', function() {
+        Settings.set(Settings.Key.precision, parseInt(this.value));
+    });
+    lookupBehaviourInput.addEventListener('change', function() {
+        Settings.set(Settings.Key.lookupBehaviour, this.value);
+    });
+    numDigitsInput.addEventListener('change', function() {
+        Settings.set(Settings.Key.numDigits, parseInt(this.value));
+    })
     
     // dividendInputField.value = '4195835';
     // divisorInputField.value = '3145727';
     // setTimeout(didClickCalculateButton, 1000);
 });
+
+
+(window as any).lk_goto = (index: number) => {
+    location.href = `#${index}`;
+}

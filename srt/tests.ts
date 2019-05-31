@@ -36,6 +36,7 @@ function _lookupBehaviourToString(lookupBehaviour: LookupTableBehaviour): string
     }
 }
 
+
 for (let i = 0; i < testCases.length; i++) {
     console.log(`======= test #${i} =======`);
     

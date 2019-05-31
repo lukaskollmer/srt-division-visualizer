@@ -1,5 +1,6 @@
 import { LKNumber } from "../srt/number.js";
 import { DivisionStep, DivisionResult } from "../srt/srt.js";
+import { config } from "../srt/utils.js";
 
 const kDivisionVisualizationInsertedDivClass = '__div_visualization';
 
@@ -60,13 +61,14 @@ export namespace MathJaxUtils {
 
     // Params:
     // dividend/divisor: tuple containing [original input, normalized input, normalized input exponent]
-    export function createHeaderEquation(_dividend: [number, LKNumber, number], _divisor: [number, LKNumber, number], result: DivisionResult, shiftedResult: LKNumber): string {
+    export function createHeaderEquation(_dividend: [number, LKNumber, number], _divisor: [number, LKNumber, number], result: DivisionResult, shiftedResult: LKNumber, coloredQuotientDigits: string[]): string {
         const [input_dividend, norm_dividend, norm_dividend_exp] = _dividend;
         const [input_divisor, norm_divisor, norm_divisor_exp] = _divisor;
     
         let str = '$$';
+        str += '\\begin{align*}';
         str += genFraction(input_dividend, 10, null, input_divisor, 10, null);
-        str += ' = ';
+        str += ' &= ';
         str += genFraction(norm_dividend.toBinaryString(), 2, norm_dividend_exp, norm_divisor.toBinaryString(), 2, norm_divisor_exp);
         str += ' = ';
         str += genFraction(norm_dividend.toBinaryString(), 2, null, norm_divisor.toBinaryString(), 2, null);
@@ -80,17 +82,60 @@ export namespace MathJaxUtils {
             else return [12, true];
         })();
 
+        str += '\\\\[7pt]'
+        str += ' &= ';
 
-        str += ' = ';
+        str += '[';
+        str += coloredQuotientDigits.join(', ');
+        str += `]_{${config.RADIX}}`;
+
+        str += '\\\\[5pt]'
+        str += ' &= ';
+
         str += `${result.value.toBinaryString(undefined, significandLimit)}`
         if (significandShortened) {
             str += '...';
         }
         str += ` * 2^{${norm_dividend_exp - norm_divisor_exp}} = ${shiftedResult.toNumber()}`;
 
-        // str += ' = ';
-        // str += `${result.value_unshifted.toBinaryString(4, 12)}... * 2^{${d1_exp - d2_exp}} = ${result.value.toNumber()}`;
-        str += '$$';
+        str += '\\end{align*}$$'
         return str;
+    }
+}
+
+
+export namespace Settings {
+    const settingsKey = (name: string) => `me.lukaskollmer.srt-division-visualizer.settings.${name}`;
+
+
+    class _SettingsItem<T> {
+        readonly key: string;
+        readonly defaultValue: T;
+
+        constructor(name: string, defaultValue: T) {
+            this.key = settingsKey(name);
+            this.defaultValue = defaultValue;
+        }
+    }
+
+    export const Key = {
+        divisor:   new _SettingsItem<number>('divisor', 15),
+        dividend:  new _SettingsItem<number>('dividend', 4),
+        precision: new _SettingsItem<number>('precision', 12),
+        lookupBehaviour: new _SettingsItem<string>('lookupTableBehaviour', 'input.lookup-behaviour.correct'),
+        numDigits: new _SettingsItem<number>('numDigits', 23)
+    };
+
+    export function get<T>(item: _SettingsItem<T>): T {
+        const value = localStorage.getItem(item.key);
+        if (value === null) {
+            Settings.set(item, item.defaultValue);
+            return item.defaultValue;
+        }
+        return JSON.parse(value) as T;
+    }
+
+    export function set<T>(item: _SettingsItem<T>, value: T) {
+        localStorage.setItem(item.key, JSON.stringify(value));
     }
 }

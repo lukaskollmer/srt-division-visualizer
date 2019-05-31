@@ -138,10 +138,6 @@
                 justify-content: center;
             }
 
-            .input-group:not(:last-child) {
-                margin-right: 25px;
-            }
-
             .input-item {
                 margin: 5px 10px 5px 10px;
                 display: flex;
@@ -157,12 +153,16 @@
             .input-item-title {
                 margin-right: 15px;
             }
+
+            .mjx-chtml a {
+                color: inherit;
+            }
         </style>
 
         <div class="row" style="margin-top: 2%;">
-            <div class="input-container">
-                <div class="twelve columns">
-                    <h3>Input</h3>
+            <div class="twelve columns">
+                <h3>Input</h3>
+                <div class="input-container">
                     <div class="input-groups-container">
                         <div class="input-group">
                             <div class="input-item">
@@ -188,24 +188,31 @@
                                 </select>
                             </div>
                         </div>
+                        
+                        <div class="input-group" style="justify-content:flex-start !important">
+                            <div class="input-item">
+                                <span class="input-item-title">#Digits:</span>
+                                <input type="number" name="" id="input.num-digits">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-around; flex-direction: column">
+                        <button id="calc-button" style="margin-left: 15px;">Calculate</button>
                     </div>
                 </div>
-            <div style="display: flex; justify-content: space-around; flex-direction: column">
-                    <button id="calc-button" style="margin-left: 15px;">Calculate</button>
             </div>
         </div>
 
         <hr>
-
-        <div style="margin-top: 5%"></div>
         
-        <div class="row" id="insertion_marker">
+        <div class="row">
             <div class="twelve columns">
-                <div class="centered" id="input_formula">$$\text{no input}$$</div>
+                <div class="centereddd" id="input_formula">$$\text{no input}$$</div>
             </div>
         </div>
 
-        <hr>
+        <hr id="insertion_marker">
         
         <div class="row" style="margin-top: 8%">
             <div class="twelve columns">
