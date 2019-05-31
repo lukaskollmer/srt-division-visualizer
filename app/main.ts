@@ -94,22 +94,34 @@ async function didClickCalculateButton() {
     DOMGen.discardCurrentVisualization();
     DOMGen.setInsertionPoint(document.getElementById('insertion_marker'));
 
+    let dividend, divisor: LKNumber;
 
-    const dividend = new LKNumber(dividendRawValue);
-    const divisor = new LKNumber(divisorRawValue);
+    try {
+        dividend = new LKNumber(dividendRawValue);
+        divisor = new LKNumber(divisorRawValue);
+    } catch (error) {
+        if (error instanceof Error) {
+            alert(`${error.name}: ${error.message}`);
+        } else {
+            alert(error);
+        }
+        return;
+    }
 
-    const incorrectResult = srt(dividend, divisor, precision, LookupTableBehaviour.Incorrect_PentiumFDIV);
 
-    document.getElementById('input_formula').innerHTML = MathJaxUtils.createHeaderEquation(dividend, divisor, incorrectResult);
+
+    const result = srt(dividend, divisor, precision, LookupTableBehaviour.Incorrect_PentiumFDIV);
+
+    document.getElementById('input_formula').innerHTML = MathJaxUtils.createHeaderEquation(dividend, divisor, result);
 
 
     let hadInvalidLookupDigit = false;
     const quotientDigitsList: string[] = [];
 
-    const [exp_dividend, exp_divisor] = [incorrectResult.normalizedDividend[1], incorrectResult.normalizedDivisor[1]];
+    const [exp_dividend, exp_divisor] = [result.normalizedDividend[1], result.normalizedDivisor[1]];
 
     for (let k = 0; k < precision; k++) {
-        const step = incorrectResult.steps[k];
+        const step = result.steps[k];
 
         if (hadInvalidLookupDigit || step.isGuessFromInvalidLookupTableArea) {
             hadInvalidLookupDigit = true;
@@ -124,8 +136,8 @@ async function didClickCalculateButton() {
 
         const html = iterationStepTemplate.substitute({
             RADIX:                  config.RADIX,
-            DIVISOR:                incorrectResult.normalizedDivisor[0].toBinaryString(4, LKNumber.significandWidth),
-            DIVISOR_APPROX:         incorrectResult.approximatedDivisor.toBinaryString(1, 4),
+            DIVISOR:                result.normalizedDivisor[0].toBinaryString(4, LKNumber.significandWidth),
+            DIVISOR_APPROX:         result.approximatedDivisor.toBinaryString(1, 4),
             ITERATION_INDEX:        k,
             ITERATION_INDEX_NEXT:   k+1,
             QUOTIENT_GUESS:         quotientDigitsList[k],

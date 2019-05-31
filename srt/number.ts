@@ -36,6 +36,9 @@ export class LKNumber {
 
             const dec = Math.floor(value);
             const decBinaryDigits = dec.toString(2);
+            if (decBinaryDigits.length > LKNumber.exponentWidth - 1) {
+                throw new Error(`Value ${ isNegative ? -value : value} is too wide and cannot be represented by LKNumber`);
+            }
             const limit = Math.min(LKNumber.exponentWidth, decBinaryDigits.length);
             for (let i = 0; i < limit; i++) {
                 const x = parseInt(decBinaryDigits.charAt(i));
