@@ -112,7 +112,7 @@ export class LKNumber {
     }
 
     get isNegative() {
-        return this.significandView[0] === 1;
+        return this.exponentView[0] === 1;
     }
 
     isNormalized(): boolean {
