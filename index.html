@@ -17,10 +17,6 @@
     
     <style>
         @import url('https://fonts.googleapis.com/css?family=Roboto');
-        :root {
-            --input-fraction-to-button-margin: 20px;
-        }
-        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
@@ -58,9 +54,6 @@
             align-items: center;
         }
         
-        #input-button-wrapper {
-            margin: auto auto auto calc(var(--input-fraction-to-button-margin) / 2);
-        }
         
         #d1, #d2 {
             border-style: none;
@@ -78,19 +71,6 @@
             background-color: #F1F3F4;
         }
         
-        #fraction {
-            margin: auto calc(var(--input-fraction-to-button-margin) / 2) auto auto;
-            width: 200px;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        #fraction-divider {
-            background-color: black;
-            position: relative;
-            height: 2px;
-            width: 100%;
-        }
         
         .mjx-chtml, .MJXc-display {
             margin: 0px !important;
@@ -137,31 +117,95 @@
                 <h1>SRT Division Visualizer</h1>
             </div>
         </div>
-        
-        <div class="row" style="margin-top: 5%">
-            <div class="twelve columns">
-                <div id="input" class="centered" style="background-color: white">
-                    <div id="fraction">
-                        <input type="number" id="d1" class="fraction-input monospaced" placeholder="dividend">
-                        <div id="fraction-divider"></div>
-                        <input type="number" id="d2" class="fraction-input monospaced" placeholder="divisor">
-                    </div>
-                    <div id="input-button-wrapper">
-                        <button id='calc-button'>calculate</button>
+
+
+        <style>
+            .input-container {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+            }
+
+            .input-groups-container {
+                display: flex;
+                flex-direction: row;
+                justify-content: left;
+            }
+
+            .input-group {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+
+            .input-group:not(:last-child) {
+                margin-right: 25px;
+            }
+
+            .input-item {
+                margin: 5px 10px 5px 10px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .input-item > input, .input-item > select {
+                margin-bottom: 0px;
+                width: 150px;
+            }
+
+            .input-item-title {
+                margin-right: 15px;
+            }
+        </style>
+
+        <div class="row" style="margin-top: 2%;">
+            <div class="input-container">
+                <div class="twelve columns">
+                    <h3>Input</h3>
+                    <div class="input-groups-container">
+                        <div class="input-group">
+                            <div class="input-item">
+                                <span class="input-item-title">x:</span>
+                                <input type="number" name="" id="input.dividend">
+                            </div>
+                            <div class="input-item">
+                                <span class="input-item-title">y:</span>
+                                <input type="number" name="" id="input.divisor">
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <div class="input-item">
+                                <span class="input-item-title">Precision:</span>
+                                <input type="number" name="" id="input.precision">
+                            </div>
+                            <div class="input-item">
+                                <span class="input-item-title">Lookup behaviour:</span>
+                                <select name="" id="input.lookup-behaviour">
+                                    <option value="input.lookup-behaviour.correct">Correct</option>
+                                    <option value="input.lookup-behaviour.pentium-fdiv">Pentium FDIV</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
+            <div style="display: flex; justify-content: space-around; flex-direction: column">
+                    <button id="calc-button" style="margin-left: 15px;">Calculate</button>
             </div>
         </div>
+
+        <hr>
 
         <div style="margin-top: 5%"></div>
         
         <div class="row" id="insertion_marker">
             <div class="twelve columns">
-                <h3>Input</h3>
                 <div class="centered" id="input_formula">$$\text{no input}$$</div>
             </div>
         </div>
 
+        <hr>
         
         <div class="row" style="margin-top: 8%">
             <div class="twelve columns">

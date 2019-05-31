@@ -10,8 +10,10 @@ import { config } from '../srt/utils.js';
 
 let iterationStepTemplate: StringTemplate = null;
 
-const dividendInputField = document.getElementById('d1') as HTMLInputElement;
-const divisorInputField  = document.getElementById('d2') as HTMLInputElement;
+const dividendInputField   = document.getElementById('input.dividend') as HTMLInputElement;
+const divisorInputField    = document.getElementById('input.divisor') as HTMLInputElement;
+const precisionInputField  = document.getElementById('input.precision') as HTMLInputElement;
+const lookupBehaviourInput = document.getElementById('input.lookup-behaviour') as HTMLSelectElement;
 
 const domParser = new DOMParser();
 
@@ -81,15 +83,29 @@ class StringTemplate {
 }
 
 
-async function didClickCalculateButton() {
+function getSelectedLookupTableBehaviour(): LookupTableBehaviour {
+    const rawValue = lookupBehaviourInput.value;
+    if (rawValue === 'input.lookup-behaviour.correct') {
+        return LookupTableBehaviour.Correct;
+    } else if (rawValue === 'input.lookup-behaviour.pentium-fdiv') {
+        return LookupTableBehaviour.Incorrect_PentiumFDIV;
+    } else {
+        console.log(`Invalid option value: ${rawValue}`);
+        return LookupTableBehaviour.Correct;
+    }
+}
+
+
+function didClickCalculateButton() {
     if (iterationStepTemplate === null) {
         throw 'FOOKIN HELL';
     }
-    const precision = 50;
+    const precision = parseInt(precisionInputField.value);
+    console.log(precision);
     const dividendValue = parseFloat(dividendInputField.value);
     const divisorValue = parseFloat(divisorInputField.value);
 
-    if (!checkIsValidInput('dividend', dividendValue) || !checkIsValidInput('divisor', divisorValue)) {
+    if (!checkIsValidInput('dividend', dividendValue) || !checkIsValidInput('divisor', divisorValue) || !checkIsValidInput('precision', precision)) {
         return;
     }
 
@@ -112,8 +128,9 @@ async function didClickCalculateButton() {
     }
 
 
+    const lookupBehaviour = getSelectedLookupTableBehaviour();
 
-    const result = srt(dividend, divisor, precision, LookupTableBehaviour.Incorrect_PentiumFDIV);
+    const result = srt(dividend, divisor, precision, lookupBehaviour);
     const shiftedFinalResult = result.value.copy(); shiftedFinalResult.shift_left(exp_dividend - exp_divisor);
 
     document.getElementById('input_formula').innerHTML = MathJaxUtils.createHeaderEquation(
