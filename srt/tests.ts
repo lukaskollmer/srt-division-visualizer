@@ -31,8 +31,8 @@ const testCases: TestCase[] = [
 
 function _lookupBehaviourToString(lookupBehaviour: LookupTableBehaviour): string {
     switch (lookupBehaviour) {
-        case LookupTableBehaviour.Correct: return 'Correct';
-        case LookupTableBehaviour.Incorrect_PentiumFDIV: return 'Incorrect_PentiumFDIV';
+        case LookupTableBehaviour.Correct: return 'LookupTableBehaviour.Correct';
+        case LookupTableBehaviour.Incorrect_PentiumFDIV: return 'LookupTableBehaviour.Incorrect_PentiumFDIV';
     }
 }
 
@@ -40,13 +40,16 @@ for (let i = 0; i < testCases.length; i++) {
     console.log(`======= test #${i} =======`);
     
     const testCase = testCases[i];
+
+    const [x, x_exp] = LKNumber.normalized(testCase.x);
+    const [y, y_exp] = LKNumber.normalized(testCase.y);
     
-    const result = srt(new LKNumber(testCase.x), new LKNumber(testCase.y), config.precision, testCase.lookupBehaviour);
-    const value = result.value.toNumber();
+    const result = srt(x, y, config.precision, testCase.lookupBehaviour);
+    result.value.shift_left(x_exp - y_exp);
     console.log(`- ${testCase.x} / ${testCase.y} (${_lookupBehaviourToString(testCase.lookupBehaviour)})`);
     console.log(`- exp: ${testCase.expectedResult}`);
-    console.log(`- act: ${value}`)
-    console.log(`- diff: ${Math.abs(value - testCase.expectedResult)}`);
+    console.log(`- act: ${result.value.toNumber()}`)
+    console.log(`- diff: ${Math.abs(result.value.toNumber() - testCase.expectedResult)}`);
     console.log(`- digits: ${result.quotientDigits}`)
     
     console.log();

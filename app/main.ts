@@ -13,9 +13,11 @@ let iterationStepTemplate: StringTemplate = null;
 const dividendInputField = document.getElementById('d1') as HTMLInputElement;
 const divisorInputField  = document.getElementById('d2') as HTMLInputElement;
 
+const domParser = new DOMParser();
 
-function checkIsValidInput(fieldName: string, rawValue: string): boolean {
-    if (rawValue.length === 0) {
+
+function checkIsValidInput(fieldName: string, value: number): boolean {
+    if (!isFinite(value)) { // according to the mozilla docs, isFinite also checks for NaN and undefined
         alert(`Error: Missing input in ${fieldName} field`);
         return false;
     }
@@ -83,11 +85,11 @@ async function didClickCalculateButton() {
     if (iterationStepTemplate === null) {
         throw 'FOOKIN HELL';
     }
-    const precision = 12;
-    const dividendRawValue = dividendInputField.value;
-    const divisorRawValue = divisorInputField.value;
+    const precision = 50;
+    const dividendValue = parseFloat(dividendInputField.value);
+    const divisorValue = parseFloat(divisorInputField.value);
 
-    if (!checkIsValidInput('dividend', dividendRawValue) || !checkIsValidInput('divisor', divisorRawValue)) {
+    if (!checkIsValidInput('dividend', dividendValue) || !checkIsValidInput('divisor', divisorValue)) {
         return;
     }
 
@@ -95,10 +97,11 @@ async function didClickCalculateButton() {
     DOMGen.setInsertionPoint(document.getElementById('insertion_marker'));
 
     let dividend, divisor: LKNumber;
+    let exp_dividend, exp_divisor: number;
 
     try {
-        dividend = new LKNumber(dividendRawValue);
-        divisor = new LKNumber(divisorRawValue);
+        [dividend, exp_dividend] = LKNumber.normalized(dividendValue);
+        [divisor, exp_divisor] = LKNumber.normalized(divisorValue);
     } catch (error) {
         if (error instanceof Error) {
             alert(`${error.name}: ${error.message}`);
@@ -111,14 +114,19 @@ async function didClickCalculateButton() {
 
 
     const result = srt(dividend, divisor, precision, LookupTableBehaviour.Incorrect_PentiumFDIV);
+    const shiftedFinalResult = result.value.copy(); shiftedFinalResult.shift_left(exp_dividend - exp_divisor);
 
-    document.getElementById('input_formula').innerHTML = MathJaxUtils.createHeaderEquation(dividend, divisor, result);
+    document.getElementById('input_formula').innerHTML = MathJaxUtils.createHeaderEquation(
+        [dividendValue, dividend, exp_dividend],
+        [divisorValue, divisor, exp_divisor],
+        result,
+        shiftedFinalResult
+    );
+
 
 
     let hadInvalidLookupDigit = false;
     const quotientDigitsList: string[] = [];
-
-    const [exp_dividend, exp_divisor] = [result.normalizedDividend[1], result.normalizedDivisor[1]];
 
     for (let k = 0; k < precision; k++) {
         const step = result.steps[k];
@@ -130,13 +138,14 @@ async function didClickCalculateButton() {
             quotientDigitsList.push(step.quotientGuess.toString());
         }
 
-        const [ass_unshifted, ass_shifted] = assembleQuotientDigitsIntoResult(step.quotientDigits, exp_dividend, exp_divisor);
+        const ass_unshifted = assembleQuotientDigitsIntoResult(step.quotientDigits);
+        const ass_shifted = ass_unshifted.copy(); ass_shifted.shift_left(exp_dividend - exp_divisor);
 
         const toBinary = (x: LKNumber) => x.toBinaryString(4, LKNumber.significandWidth);
 
         const html = iterationStepTemplate.substitute({
             RADIX:                  config.RADIX,
-            DIVISOR:                result.normalizedDivisor[0].toBinaryString(4, LKNumber.significandWidth),
+            DIVISOR:                divisor.toBinaryString(4, LKNumber.significandWidth),
             DIVISOR_APPROX:         result.approximatedDivisor.toBinaryString(1, 4),
             ITERATION_INDEX:        k,
             ITERATION_INDEX_NEXT:   k+1,
@@ -158,13 +167,11 @@ async function didClickCalculateButton() {
             REMAINDER_SHIFTED:      toBinary(step.remainder),
         });
 
-        const p = new DOMParser();
-        const d = p.parseFromString(html, 'text/html');
-
-        DOMGen.insert(d.firstChild.childNodes[1].firstChild as HTMLElement);
+        const dom = domParser.parseFromString(html, 'text/html');
+        DOMGen.insert(dom.firstChild.childNodes[1].firstChild as HTMLElement);
     }
 
-    MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+    MathJax.Hub.Queue(['Typeset', MathJax.Hub]);
 }
 
 

@@ -20,12 +20,11 @@ export class DivisionStep {
 
 
 export class DivisionResult {
-    normalizedDividend: [LKNumber, number];
-    normalizedDivisor: [LKNumber, number];
+    dividend: LKNumber;
+    divisor: LKNumber;
     approximatedDivisor: LKNumber;
     lookupTableBehaviour: LookupTableBehaviour;
     value: LKNumber;
-    value_unshifted: LKNumber;
     steps: DivisionStep[];
     quotientDigits: number[];
 }
@@ -55,11 +54,10 @@ function _calc_approx_remainder(carry: LKNumber, remainder: LKNumber): LKNumber 
 
 
 
-// "The other way"
-// Returns a tuple containing the unshifted and shifted value
-export function assembleQuotientDigitsIntoResult(quot_digits: number[], exp_dividend: number, exp_divisor: number): [LKNumber, LKNumber] {
-    const q_pos = new LKNumber();
-    const q_neg = new LKNumber();
+// Assembles the quotient digits back into a number
+export function assembleQuotientDigitsIntoResult(quot_digits: number[]): LKNumber {
+    const q_pos = LKNumber.new();
+    const q_neg = LKNumber.new();
     
     for (let i = 0; i < quot_digits.length; i++) {
         const digit = quot_digits[i];
@@ -82,20 +80,18 @@ export function assembleQuotientDigitsIntoResult(quot_digits: number[], exp_divi
             }
         }
     }
-    
-    const result = q_pos.sub(q_neg);
-    const result_unshifted = result.copy();
-    result.shift_left(exp_dividend - exp_divisor);
-    return [result_unshifted, result];
+
+    return q_pos.sub(q_neg);
 }
 
 
 
 
 // The SRT Division Algorithm
-export function srt(_dividend: LKNumber, _divisor: LKNumber, N: number, lookupTableBehaviour: LookupTableBehaviour): DivisionResult {
-    const [dividend, exp_dividend] = _dividend.normalized();
-    const [divisor, exp_divisor] = _divisor.normalized();
+export function srt(dividend: LKNumber, divisor: LKNumber, N: number, lookupTableBehaviour: LookupTableBehaviour): DivisionResult {
+    if (!(dividend.isNormalized() && divisor.isNormalized())) {
+        throw new Error(`[srt] dividend and divisor must be normalized LKNumbers`)
+    }
     
     const quot_digits = new Array<number>(N);
     const divisor_approx = _roundDownSignificand(divisor, 4);
@@ -106,7 +102,7 @@ export function srt(_dividend: LKNumber, _divisor: LKNumber, N: number, lookupTa
     const steps = new Array<DivisionStep>(N);
     
     let remainder = dividend;
-    let carry = new LKNumber();
+    let carry = LKNumber.new();
     
     
     for (let k = 0; k < N; k++) {
@@ -165,11 +161,11 @@ export function srt(_dividend: LKNumber, _divisor: LKNumber, N: number, lookupTa
     }
     
     const result = new DivisionResult();
-    result.normalizedDividend = [dividend, exp_dividend];
-    result.normalizedDivisor = [divisor, exp_divisor];
+    result.dividend = dividend;
+    result.divisor = divisor;
     result.approximatedDivisor = divisor_approx;
     result.lookupTableBehaviour = lookupTableBehaviour;
-    [result.value_unshifted, result.value] = assembleQuotientDigitsIntoResult(quot_digits, exp_dividend, exp_divisor);
+    result.value = assembleQuotientDigitsIntoResult(quot_digits);
     result.steps = steps;
     result.quotientDigits = quot_digits;
     

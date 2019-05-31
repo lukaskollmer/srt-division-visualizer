@@ -19,66 +19,59 @@ export class LKNumber {
     private readonly _fullBitPattern: Uint8Array;
 
 
-    constructor(value?: number | string | ArrayBuffer) {
+    private constructor(value?: ArrayBuffer) {
         if (value instanceof ArrayBuffer) {
             this._buffer = value;
         } else {
             this._buffer = new ArrayBuffer(LKNumber.bitPatternWidth);
         }
         this._fullBitPattern = new Uint8Array(this._buffer);
-        
-        if (typeof value === 'number' || typeof value === 'string') {
-            if (typeof value === 'string') {
-                value = parseFloat(value);
-            }
-            const isNegative = value < 0;
-            if (isNegative) value *= -1;
+    }
 
-            const dec = Math.floor(value);
-            const decBinaryDigits = dec.toString(2);
-            if (decBinaryDigits.length > LKNumber.exponentWidth - 1) {
-                throw new Error(`Value ${ isNegative ? -value : value} is too wide and cannot be represented by LKNumber`);
-            }
-            const limit = Math.min(LKNumber.exponentWidth, decBinaryDigits.length);
-            for (let i = 0; i < limit; i++) {
-                const x = parseInt(decBinaryDigits.charAt(i));
-                this.exponentView[LKNumber.exponentWidth - limit + i] = x;
-            }
-
-            let frac = value - dec;
-            for (let i = 0; i < LKNumber.significandWidth && frac != 0; i++) {
-                const tmp = frac - Math.pow(2, -(i+1));
-                if (tmp >= 0) {
-                    this.significandView[i] = 1;
-                    frac = tmp;
-                }
-            }
-
-            if (isNegative) {
-                LKNumber._negate_imp(this.fullBitPattern, this.fullBitPattern);
-            }
-        }
+    static new(): LKNumber {
+        return new LKNumber();
     }
 
 
-    // static normalized(value: number): [LKNumber, number] {
-    //     if (value === 0) {
-    //         return [new LKNumber(), 0];
-    //     }
+    // Returns a tuple containing: the normalized number and the normalized number's exponent
+    // Note that the exponent is relative to base 2
+    static normalized(value: number): [LKNumber, number] {
+        if (value === 0) {
+            return [LKNumber.new(), 0];
+        }
 
-    //     const isNegative = value < 0;
-    //     if (isNegative) value *= -1;
+        const isNegative = value < 0;
+        if (isNegative) value *= -1;
 
-    //     const dec = Math.floor(value);
-    //     const decBinaryDigits = dec.toString(2);
+        const number = LKNumber.new();
+        let exp: number = 0;
+        
+        const dec = Math.floor(value);
+        let frac = value - dec;
 
-    //     let exp = 0;
-    //     while (value > 10) {
-    //         value /= 10;
-    //         exp += 1;
-    //     }
-    //     return [new LKNumber(value), exp];
-    // }
+        const decBinaryDigits = dec.toString(2);
+
+        if (decBinaryDigits.length > 0) {
+            exp = decBinaryDigits.length - 1;
+            number.exponentView[LKNumber.exponentWidth - 1] = parseInt(decBinaryDigits.charAt(0));
+            for (let i = 1; i < decBinaryDigits.length; i++) {
+                number.significandView[i - 1] = parseInt(decBinaryDigits.charAt(i));
+            }
+        }
+        for (let i = 0; i < LKNumber.significandWidth - exp && frac != 0; i++) {
+            const tmp = frac - Math.pow(2, -(i+1));
+            if (tmp >= 0) {
+                number.significandView[exp + i] = 1;
+                frac = tmp;
+            }
+        }
+
+        if (isNegative) {
+            LKNumber._negate_imp(number.fullBitPattern, number.fullBitPattern);
+        }
+
+        return [number, exp];
+    }
 
 
 
@@ -118,6 +111,10 @@ export class LKNumber {
 
     get isNegative() {
         return this.significandView[0] === 1;
+    }
+
+    isNormalized(): boolean {
+        return Math.abs(this.toNumber()) < 2;
     }
 
     add(other: LKNumber): LKNumber {

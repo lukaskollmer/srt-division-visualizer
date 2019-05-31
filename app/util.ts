@@ -58,21 +58,23 @@ export namespace MathJaxUtils {
     }
     
 
-    export function createHeaderEquation(dividend: LKNumber, divisor: LKNumber, result: DivisionResult): string {
-        const [d1, d1_exp] = result.normalizedDividend;
-        const [d2, d2_exp] = result.normalizedDivisor;
+    // Params:
+    // dividend/divisor: tuple containing [original input, normalized input, normalized input exponent]
+    export function createHeaderEquation(_dividend: [number, LKNumber, number], _divisor: [number, LKNumber, number], result: DivisionResult, shiftedResult: LKNumber): string {
+        const [input_dividend, norm_dividend, norm_dividend_exp] = _dividend;
+        const [input_divisor, norm_divisor, norm_divisor_exp] = _divisor;
     
         let str = '$$';
-        str += genFraction(dividend.toNumber(), 10, null, divisor.toNumber(), 10, null);
+        str += genFraction(input_dividend, 10, null, input_divisor, 10, null);
         str += ' = ';
-        str += genFraction(d1.toBinaryString(), 2, d1_exp, d2.toBinaryString(), 2, d2_exp);
+        str += genFraction(norm_dividend.toBinaryString(), 2, norm_dividend_exp, norm_divisor.toBinaryString(), 2, norm_divisor_exp);
         str += ' = ';
-        str += genFraction(d1.toBinaryString(), 2, null, d2.toBinaryString(), 2, null);
+        str += genFraction(norm_dividend.toBinaryString(), 2, null, norm_divisor.toBinaryString(), 2, null);
         str += ' * ';
-        str += `2^{${d1_exp - d2_exp}}`;
+        str += `2^{${norm_dividend_exp - norm_divisor_exp}}`;
 
         const [significandLimit, significandShortened] = ((): [number, boolean] => {
-            const idx = result.value_unshifted.significandView.lastIndexOf(1);
+            const idx = result.value.significandView.lastIndexOf(1);
             if (idx === -1) return [5, true];
             if (idx < 12) return [idx + 1, false];
             else return [12, true];
@@ -80,11 +82,11 @@ export namespace MathJaxUtils {
 
 
         str += ' = ';
-        str += `${result.value_unshifted.toBinaryString(undefined, significandLimit)}`
+        str += `${result.value.toBinaryString(undefined, significandLimit)}`
         if (significandShortened) {
             str += '...';
         }
-        str += ` * 2^{${d1_exp - d2_exp}} = ${result.value.toNumber()}`;
+        str += ` * 2^{${norm_dividend_exp - norm_divisor_exp}} = ${shiftedResult.toNumber()}`;
 
         // str += ' = ';
         // str += `${result.value_unshifted.toBinaryString(4, 12)}... * 2^{${d1_exp - d2_exp}} = ${result.value.toNumber()}`;
