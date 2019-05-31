@@ -119,8 +119,8 @@ export namespace Settings {
     }
 
     export const Key = {
-        divisor:   new _SettingsItem<number>('divisor', 15),
-        dividend:  new _SettingsItem<number>('dividend', 4),
+        dividend:  new _SettingsItem<number>('dividend', 15),
+        divisor:   new _SettingsItem<number>('divisor', 4),
         precision: new _SettingsItem<number>('precision', 12),
         lookupBehaviour: new _SettingsItem<string>('lookupTableBehaviour', 'input.lookup-behaviour.correct'),
         numDigits: new _SettingsItem<number>('numDigits', 23)
