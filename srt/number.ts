@@ -28,11 +28,13 @@ export class LKNumber {
         this._fullBitPattern = new Uint8Array(this._buffer);
     }
 
+    // Designated Initializer
     static new(): LKNumber {
         return new LKNumber();
     }
 
 
+    // Designated Initializer
     // Returns a tuple containing: the normalized number and the normalized number's exponent
     // Note that the exponent is relative to base 2
     static normalized(value: number): [LKNumber, number] {
