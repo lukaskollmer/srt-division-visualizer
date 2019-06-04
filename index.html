@@ -38,7 +38,7 @@
             font-size: large;
             font-weight: 400;
         }
-        
+
         ul {
             list-style-position: outside;
         }
@@ -48,37 +48,49 @@
             align-content: center;
         }
         
-        #input {
+
+        /* Input UI */
+
+        .input-container {
             display: flex;
-            margin: auto;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
+        .input-groups-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: left;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .input-group:not(:first-child) {
+            padding-left: 20px;
+        }
+
+        .input-item {
+            margin: 5px 10px 5px 0px;
+            display: flex;
             align-items: center;
+            justify-content: space-between;
+        }
+
+        .input-item > input, .input-item > select {
+            margin-bottom: 0px;
+            width: 150px;
+        }
+
+        .input-item-title {
+            margin-right: 10px;
         }
         
         
-        #d1, #d2 {
-            border-style: none;
-            margin: 5px auto;
-            position: relative;
-            width: 90%;
-            text-align: center;
-            background-color: #f4f6f7;
-            transition: background-color 0.5s ease;
-            font-size: 115%;
-            /* font-weight: bold; */
-        }
-        
-        #d1:hover, #d2:hover {
-            background-color: #F1F3F4;
-        }
-        
-        
-        .mjx-chtml, .MJXc-display {
-            margin: 0px !important;
-            padding: 0px !important;
-            text-align: left !important;
-            display: inline !important;
-        }
-        
+        /* disable the arrow buttons in number input fields */
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button {
             -webkit-appearance: none;
@@ -86,6 +98,9 @@
         input[type=number] {
             -moz-appearance: textfield;
         }
+
+        
+        /* Iteration Step UI */
         
         .iteration-index-header {
             margin: 15px 0px 5px 0px;
@@ -104,10 +119,24 @@
             background-color: red;
         }
         
+
+        /* MathJax-related stuff */
+
         p.latex {
             margin: 10px 0px;
         }
         
+        .mjx-chtml a {
+            color: inherit;
+        }
+
+        .mjx-chtml, .MJXc-display {
+            margin: 0px !important;
+            padding: 0px !important;
+            text-align: left !important;
+            display: inline !important;
+        }
+
     </style>
 </head>
 <body>
@@ -117,51 +146,6 @@
                 <h1>SRT Division Visualizer</h1>
             </div>
         </div>
-
-
-        <style>
-            .input-container {
-                display: flex;
-                flex-direction: row;
-                justify-content: space-between;
-            }
-
-            .input-groups-container {
-                display: flex;
-                flex-direction: row;
-                justify-content: left;
-            }
-
-            .input-group {
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-            }
-
-            .input-group:not(:first-child) {
-                padding-left: 20px;
-            }
-
-            .input-item {
-                margin: 5px 10px 5px 0px;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-            }
-
-            .input-item > input, .input-item > select {
-                margin-bottom: 0px;
-                width: 150px;
-            }
-
-            .input-item-title {
-                margin-right: 10px;
-            }
-
-            .mjx-chtml a {
-                color: inherit;
-            }
-        </style>
 
         <div class="row" style="margin-top: 2%;">
             <div class="twelve columns">
