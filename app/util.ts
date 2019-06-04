@@ -96,7 +96,7 @@ export namespace MathJaxUtils {
         if (significandShortened) {
             str += '...';
         }
-        str += ` * 2^{${norm_dividend_exp - norm_divisor_exp}} = ${shiftedResult.toNumber()}`;
+        str += `_{2} * 2^{${norm_dividend_exp - norm_divisor_exp}} = ${shiftedResult.toNumber()}`;
 
         str += '\\end{align*}$$'
         return str;
