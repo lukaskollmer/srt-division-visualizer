@@ -61,7 +61,7 @@ export namespace MathJaxUtils {
 
     // Params:
     // dividend/divisor: tuple containing [original input, normalized input, normalized input exponent]
-    export function createHeaderEquation(_dividend: [number, LKNumber, number], _divisor: [number, LKNumber, number], result: DivisionResult, shiftedResult: LKNumber, coloredQuotientDigits: string[]): string {
+    export function createHeaderEquation(_dividend: [number, LKNumber, number], _divisor: [number, LKNumber, number], result: DivisionResult, shiftedResult: string, coloredQuotientDigits: string[]): string {
         const [input_dividend, norm_dividend, norm_dividend_exp] = _dividend;
         const [input_divisor, norm_divisor, norm_divisor_exp] = _divisor;
     
@@ -96,7 +96,7 @@ export namespace MathJaxUtils {
         if (significandShortened) {
             str += '...';
         }
-        str += `_{2} * 2^{${norm_dividend_exp - norm_divisor_exp}} = ${shiftedResult.toNumber()}`;
+        str += `_{2} * 2^{${norm_dividend_exp - norm_divisor_exp}} = ${shiftedResult}_{10}`;
 
         str += '\\end{align*}$$'
         return str;
@@ -106,7 +106,6 @@ export namespace MathJaxUtils {
 
 export namespace Settings {
     const settingsKey = (name: string) => `me.lukaskollmer.srt-division-visualizer.settings.${name}`;
-
 
     class _SettingsItem<T> {
         readonly key: string;
@@ -119,11 +118,10 @@ export namespace Settings {
     }
 
     export const Key = {
-        dividend:  new _SettingsItem<number>('dividend', 15),
-        divisor:   new _SettingsItem<number>('divisor', 4),
-        precision: new _SettingsItem<number>('precision', 12),
-        lookupBehaviour: new _SettingsItem<string>('lookupTableBehaviour', 'input.lookup-behaviour.correct'),
-        numDigits: new _SettingsItem<number>('numDigits', 23)
+        dividend:  new _SettingsItem<number>('dividend', 4195835),
+        divisor:   new _SettingsItem<number>('divisor', 3145727),
+        precision: new _SettingsItem<number>('precision', 28),
+        lookupBehaviour: new _SettingsItem<string>('lookupTableBehaviour', 'input.lookup-behaviour.pentium-fdiv')
     };
 
     export function get<T>(item: _SettingsItem<T>): T {

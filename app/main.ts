@@ -13,15 +13,14 @@ function getElementById<T extends HTMLElement>(id: string): T {
 }
 
 
+const domParser = new DOMParser();
 let iterationStepTemplate: StringTemplate = null;
 
 const dividendInputField   = getElementById<HTMLInputElement>('input.dividend');
 const divisorInputField    = getElementById<HTMLInputElement>('input.divisor');
 const precisionInputField  = getElementById<HTMLInputElement>('input.precision');
 const lookupBehaviourInput = getElementById<HTMLSelectElement>('input.lookup-behaviour');
-const numDigitsInput       = getElementById<HTMLInputElement>('input.num-digits');
 
-const domParser = new DOMParser();
 
 
 function checkIsValidInput(fieldName: string, value: number): boolean {
@@ -34,8 +33,6 @@ function checkIsValidInput(fieldName: string, value: number): boolean {
 }
 
 
-
-// TODO rewrite this so that it parses all template names once, and just uses the start/end offsets in subsequent subsituutions
 class StringTemplate {
     readonly rawString: string;
 
@@ -45,11 +42,7 @@ class StringTemplate {
 
     substitute(substitutions: {[key: string]: string | number}): string {
         let components: string[] = [];
-
         let next_char_escaped: boolean = false;
-        let totalOffset = 0;
-
-
 
         for (const line of this.rawString.split('\n')) {
             if (line.charAt(0) === '!') {
@@ -57,12 +50,9 @@ class StringTemplate {
             }
 
             let lastMatchEndIndex = 0;
-
             for (let i = 0; i < line.length; i++) {
                 let c = line.charAt(i);
-
                 next_char_escaped = (c === '\\') ? !next_char_escaped : false;
-
                 if (!next_char_escaped && c === '%') {
                     components.push(line.substring(lastMatchEndIndex, i));
                     i += 1;
@@ -80,7 +70,6 @@ class StringTemplate {
                     components.push(String(replacement));
                 }
             }
-
             components.push(line.substring(lastMatchEndIndex, line.length), '\n');
         }
 
@@ -107,7 +96,6 @@ function didClickCalculateButton() {
         throw 'FOOKIN HELL';
     }
     const precision = parseInt(precisionInputField.value);
-    console.log(precision);
     const dividendValue = parseFloat(dividendInputField.value);
     const divisorValue = parseFloat(divisorInputField.value);
 
@@ -133,7 +121,8 @@ function didClickCalculateButton() {
         return;
     }
 
-    const result = srt(dividend, divisor, precision, getSelectedLookupTableBehaviour());
+    const lookupBehaviour = getSelectedLookupTableBehaviour();
+    const result = srt(dividend, divisor, precision, lookupBehaviour);
 
     let hadInvalidLookupDigit = false;
     const coloredQuotientDigits: string[] = [];
@@ -180,13 +169,34 @@ function didClickCalculateButton() {
     DOMGen.insert(document.createElement('hr'));
 
     const shiftedFinalResult = result.value.copy(); shiftedFinalResult.shift_left(exp_dividend - exp_divisor);
+    const shiftedFinalResultDigits: string = (() => {
+        const finalResultAsString = shiftedFinalResult.toNumber().toString();
+        if (lookupBehaviour === LookupTableBehaviour.Correct) {
+            return `\\color{black}{${finalResultAsString}}`;
+        }
+        const correctSrtResult = srt(dividend, divisor, precision, LookupTableBehaviour.Correct);
+        const correctResultValue = correctSrtResult.value.copy(); correctResultValue.shift_left(exp_dividend - exp_divisor);
+        const correctResultAsString = correctResultValue.toNumber().toString();
+
+        const limit = Math.min(finalResultAsString.length, correctResultAsString.length);
+        let i = 0;
+        while (i < limit && finalResultAsString.charAt(i) === correctResultAsString.charAt(i)) {
+            i += 1;
+        }
+
+        return i === limit
+            ? finalResultAsString
+            : `${finalResultAsString.substring(0, i)}\\color{red}{${finalResultAsString.substring(i)}}`;
+    })();
+
     document.getElementById('input_formula').innerHTML = MathJaxUtils.createHeaderEquation(
         [dividendValue, dividend, exp_dividend],
         [divisorValue, divisor, exp_divisor],
         result,
-        shiftedFinalResult,
+        shiftedFinalResultDigits,
         coloredQuotientDigits
     );
+
 
     MathJax.Hub.Queue(['Typeset', MathJax.Hub]);
 }
@@ -230,13 +240,6 @@ document.addEventListener('DOMContentLoaded', () => {
     lookupBehaviourInput.addEventListener('change', function() {
         Settings.set(Settings.Key.lookupBehaviour, this.value);
     });
-    numDigitsInput.addEventListener('change', function() {
-        Settings.set(Settings.Key.numDigits, parseInt(this.value));
-    })
-    
-    // dividendInputField.value = '4195835';
-    // divisorInputField.value = '3145727';
-    // setTimeout(didClickCalculateButton, 1000);
 });
 
 
