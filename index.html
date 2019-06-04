@@ -18,7 +18,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css?family=Roboto');
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, Roboto, 'Segoe UI', Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
         
         .monospaced, #number-preview {
@@ -136,7 +136,6 @@
             text-align: left !important;
             display: inline !important;
         }
-
     </style>
 </head>
 <body>
@@ -155,22 +154,22 @@
                         <div class="input-group">
                             <div class="input-item">
                                 <span class="input-item-title">x:</span>
-                                <input type="number" name="" id="input.dividend">
+                                <input type="number" id="input.dividend">
                             </div>
                             <div class="input-item">
                                 <span class="input-item-title">y:</span>
-                                <input type="number" name="" id="input.divisor">
+                                <input type="number" id="input.divisor">
                             </div>
                         </div>
                         
                         <div class="input-group">
                             <div class="input-item">
                                 <span class="input-item-title">Precision:</span>
-                                <input type="number" name="" id="input.precision">
+                                <input type="number" id="input.precision">
                             </div>
                             <div class="input-item">
                                 <span class="input-item-title">Lookup behaviour:</span>
-                                <select name="" id="input.lookup-behaviour">
+                                <select id="input.lookup-behaviour">
                                     <option value="input.lookup-behaviour.correct">Correct</option>
                                     <option value="input.lookup-behaviour.pentium-fdiv">Pentium FDIV</option>
                                 </select>
@@ -194,13 +193,32 @@
         </div>
 
         <hr id="insertion_marker">
-        
+
+
         <div class="row" style="margin-top: 8%">
+            <div class="twelve rows">
+                <h3>About</h3>
+                <p>This project was created as part of the IN0014 seminar <a href="https://campus.tum.de/tumonline/wbLv.wbShowLVDetail?pStpSpNr=950402141">Analyse von Softwarefehlern</a> (Analyzing Software Bugs).</p>
+            </div>
+        </div>
+
+        <div class="row" style="margin-top: 4%">
             <div class="twelve columns">
-                <h3>Further reading:</h3>
+                <h3>Other resources</h3>
                 <ul>
-                    <li><a href="https://files.lukaskollmer.me/925-934.pdf">Higher-Radix Division Using Estimates of the Divisor and Partial Remainders</a></li>
-                    <li><a href="https://files.lukaskollmer.me/intel_whitepaper.pdf">Statistical Analysis of Floating Point Flaw in the Pentium Processor (1994)</a></li>
+                    <li><a href="https://docs.google.com/spreadsheets/d/1L6T_SfR-T6IQwE8KTKssrxZpG9ZIDXapkZ6eCQ_Jt3w/edit?usp=sharing">The Pentium's FDIV lookup table</a></li>
+                    <li><a href="https://files.lukaskollmer.me/tum/intel-pentium-fdiv-division-bug.pdf">Slides from my presentation about the FDIV bug</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="row" style="margin-top: 4%">
+            <div class="twelve columns">
+                <h3>Further reading</h3>
+                <ul>
+                    <li><a href="https://files.lukaskollmer.me/tum/925-934.pdf">Higher-Radix Division Using Estimates of the Divisor and Partial Remainders</a></li>
+                    <li><a href="https://files.lukaskollmer.me/tum/intel_whitepaper.pdf">Statistical Analysis of Floating Point Flaw in the Pentium Processor (1994)</a></li>
+                    <li><a href="https://lukaskollmer.s3.amazonaws.com/tum/ARITH12_Coe.pdf">It Takes Six Ones To Reach A Flaw</a></li>
                 </ul>
             </div>
         </div>
