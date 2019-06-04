@@ -78,8 +78,8 @@ export namespace MathJaxUtils {
         const [significandLimit, significandShortened] = ((): [number, boolean] => {
             const idx = result.value.significandView.lastIndexOf(1);
             if (idx === -1) return [5, true];
-            if (idx < 12) return [idx + 1, false];
-            else return [12, true];
+            if (idx < 16) return [idx + 1, false];
+            else return [16, true];
         })();
 
         str += '\\\\[7pt]'
