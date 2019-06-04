@@ -2,7 +2,7 @@
 
 A visualization of the SRT division algorithm as used in the 1994 Intel Pentium processor generation, with focus on the 1994 Pentium's FDIV division bug.
 
-This project was created as part of the IN0014 seminar [Analyse von Softwarebugs](https://campus.tum.de/tumonline/wbLv.wbShowLVDetail?pStpSpNr=950402141) (Analyzing Software Bugs).
+This project was created as part of the IN0014 seminar [Analyse von Softwarefehlern](https://campus.tum.de/tumonline/wbLv.wbShowLVDetail?pStpSpNr=950402141) (Analyzing Software Bugs).
 
 ## Usage
 - A live version of the app is deployed at https://lukaskollmer.me/srt-division-visualizer/
@@ -11,6 +11,7 @@ This project was created as part of the IN0014 seminar [Analyse von Softwarebugs
 
 ## Other resources
 - [The Pentium's FDIV lookup table](https://docs.google.com/spreadsheets/d/1L6T_SfR-T6IQwE8KTKssrxZpG9ZIDXapkZ6eCQ_Jt3w/edit?usp=sharing)
+- [Slides from my presentation about the FDIV bug](https://files.lukaskollmer.me/tum/intel-pentium-fdiv-division-bug.pdf)
 
 
 ## Further reading
