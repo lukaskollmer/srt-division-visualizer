@@ -61,16 +61,16 @@
                         <span>Multiply the quotient digit guess w/ the divisor:</span>
                         <p class="latex">
                             $$
-                            \begin{align*}
-                                -q_{%ITERATION_INDEX%}d \ &=\ %QUOTIENT_GUESS%_{10} * %DIVISOR%_{2} \\
-                                &=\ -(%QD_SHIFTED_B4_NEG%_{2} \\
-                                &=\ %NEG_QD%_{2} \\
-                            \end{align*}
+                            \begin{array}{rr}
+                                -q_{%ITERATION_INDEX%}d = & -(%QUOTIENT_GUESS%_{10} * %DIVISOR%_{2})    \\
+                                                        = & -(%QD_SHIFTED_B4_NEG%_{2}                   \\
+                                                        = & %NEG_QD%_{2}
+                            \end{array}
                             $$
                         </p>
                     </li>
                     <li>
-                        <span>$$c_{%ITERATION_INDEX_NEXT%} + r_{%ITERATION_INDEX_NEXT%} = c_{%ITERATION_INDEX%} + r_{%ITERATION_INDEX%} + (-q_{%ITERATION_INDEX%}d):$$</span>
+                        <span>$$c_{%ITERATION_INDEX_NEXT%}, r_{%ITERATION_INDEX_NEXT%} = c_{%ITERATION_INDEX%} + r_{%ITERATION_INDEX%} + (-q_{%ITERATION_INDEX%}d):$$</span>
                         <p class="latex">
                             $$
                             \begin{array}{cll}
