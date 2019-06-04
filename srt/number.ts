@@ -3,11 +3,11 @@
 
 export class LKNumber {
     static get exponentWidth(): number {
-        return 32;
+        return 16;
     }
     
     static get significandWidth(): number {
-        return 64;
+        return 52;
     }
     
     static get bitPatternWidth(): number {
