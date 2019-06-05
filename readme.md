@@ -15,9 +15,9 @@ This project was created as part of the IN0014 seminar [Analyse von Softwarefehl
 
 
 ## Further reading
-- [Higher-Radix Division Using Estimates of the Divisor and Partial Remainders](https://files.lukaskollmer.me/tum/925-934.pdf)
-- [Statistical Analysis of Floating Point Flaw in the Pentium Processor (1994)](https://files.lukaskollmer.me/tum/intel_whitepaper.pdf)
-- [It Takes Six Ones To Reach A Flaw](https://files.lukaskollmer.me/tum/ARITH12_Coe.pdf)
+- [Higher-Radix Division Using Estimates of the Divisor and Partial Remainders](https://files.lukaskollmer.me/tum/925-934.pdf) (D. E. Atkins, 1968)
+- [Statistical Analysis of Floating Point Flaw in the Pentium Processor](https://files.lukaskollmer.me/tum/intel_whitepaper.pdf) (Intel, 1994)
+- [It Takes Six Ones To Reach A Flaw](https://files.lukaskollmer.me/tum/ARITH12_Coe.pdf) (T. Coe, P. T. P. Tang, 1995)
 
 ## License
 MIT @ [Lukas Kollmer](https://lukaskollmer.me)
